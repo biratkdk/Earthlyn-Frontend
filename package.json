@@ -1,0 +1,22 @@
+{
+  "name": "earthlyn-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sustainability-first marketplace monorepo with Next.js, NestJS, Prisma, PostgreSQL, Stripe, and realtime messaging.",
+  "scripts": {
+    "dev:frontend": "npm --prefix apps/frontend run dev",
+    "dev:backend": "npm --prefix apps/backend run start:dev",
+    "vercel-build": "npm run build:frontend",
+    "build:frontend": "node scripts/build-frontend.mjs",
+    "build:backend": "npm --prefix apps/backend run build",
+    "lint:frontend": "npm --prefix apps/frontend run lint",
+    "lint:backend": "npm --prefix apps/backend run lint",
+    "test:backend": "npm --prefix apps/backend run test",
+    "test:e2e": "npm --prefix apps/frontend run test:e2e",
+    "format:backend": "npm --prefix apps/backend run format",
+    "verify": "npm run lint:frontend && npm run lint:backend && npm run test:backend && npm run build:frontend && npm run build:backend",
+    "verify:ci": "npm run verify && npm run audit:prod && npm run docker:config",
+    "docker:config": "node scripts/docker-config.mjs",
+    "audit:prod": "npm --prefix apps/frontend audit --omit=dev && npm --prefix apps/backend audit --omit=dev"
+  }
+}

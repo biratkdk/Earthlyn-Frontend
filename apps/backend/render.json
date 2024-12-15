@@ -1,0 +1,4 @@
+﻿{
+  "buildCommand": "npm install --legacy-peer-deps && npm run build",
+  "startCommand": "node dist/main.js"
+}

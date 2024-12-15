@@ -1,0 +1,88 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: earthlyn-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-earthlyn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-earthlyn_local_password}
+      POSTGRES_DB: ${POSTGRES_DB:-earthlyn}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: earthlyn-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      target: runner
+    container_name: earthlyn-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-earthlyn}:${POSTGRES_PASSWORD:-earthlyn_local_password}@db:5432/${POSTGRES_DB:-earthlyn}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret-to-a-32-plus-character-value}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
+      MESSAGE_ENCRYPTION_KEY: ${MESSAGE_ENCRYPTION_KEY:-change-this-message-encryption-key-32-plus}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_change_me}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_change_me}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-change_me}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL:-no-reply@your-domain.example}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      THROTTLE_TTL: ${THROTTLE_TTL:-60}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      PROCESSING_FEE_RATE: ${PROCESSING_FEE_RATE:-0.05}
+      ECO_POINTS_PER_DOLLAR: ${ECO_POINTS_PER_DOLLAR:-1}
+      ALLOW_ADMIN_REGISTRATION: ${ALLOW_ADMIN_REGISTRATION:-false}
+      AUTO_FULFILL: ${AUTO_FULFILL:-false}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/app/public/uploads}
+    ports:
+      - "${API_PORT:-3001}:3001"
+    volumes:
+      - uploads_data:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    container_name: earthlyn-migrate
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-earthlyn}:${POSTGRES_PASSWORD:-earthlyn_local_password}@db:5432/${POSTGRES_DB:-earthlyn}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:

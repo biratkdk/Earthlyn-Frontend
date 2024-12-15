@@ -1,0 +1,124 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: earthlyn-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-earthlyn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-earthlyn_local_password}
+      POSTGRES_DB: ${POSTGRES_DB:-earthlyn}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: earthlyn-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: ./apps/backend
+      target: migrate
+    container_name: earthlyn-migrate
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-earthlyn}:${POSTGRES_PASSWORD:-earthlyn_local_password}@db:5432/${POSTGRES_DB:-earthlyn}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./apps/backend
+      target: runner
+    container_name: earthlyn-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-earthlyn}:${POSTGRES_PASSWORD:-earthlyn_local_password}@db:5432/${POSTGRES_DB:-earthlyn}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret-to-a-32-plus-character-value}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
+      MESSAGE_ENCRYPTION_KEY: ${MESSAGE_ENCRYPTION_KEY:-change-this-message-encryption-key-32-plus}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_change_me}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_change_me}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-change_me}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL:-no-reply@your-domain.example}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: ${REDIS_URL:-}
+      QUEUE_DRIVER: ${QUEUE_DRIVER:-inline}
+      QUEUE_JOB_ATTEMPTS: ${QUEUE_JOB_ATTEMPTS:-3}
+      QUEUE_JOB_BACKOFF_MS: ${QUEUE_JOB_BACKOFF_MS:-5000}
+      QUEUE_WORKER_CONCURRENCY: ${QUEUE_WORKER_CONCURRENCY:-5}
+      THROTTLE_TTL: ${THROTTLE_TTL:-60}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      PROCESSING_FEE_RATE: ${PROCESSING_FEE_RATE:-0.05}
+      ECO_POINTS_PER_DOLLAR: ${ECO_POINTS_PER_DOLLAR:-1}
+      ALLOW_ADMIN_REGISTRATION: ${ALLOW_ADMIN_REGISTRATION:-false}
+      REQUIRE_EMAIL_VERIFICATION: ${REQUIRE_EMAIL_VERIFICATION:-false}
+      AUTO_FULFILL: ${AUTO_FULFILL:-false}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/app/public/uploads}
+      UPLOAD_STORAGE_DRIVER: ${UPLOAD_STORAGE_DRIVER:-local}
+      UPLOAD_S3_ENDPOINT: ${UPLOAD_S3_ENDPOINT:-}
+      UPLOAD_S3_REGION: ${UPLOAD_S3_REGION:-auto}
+      UPLOAD_S3_BUCKET: ${UPLOAD_S3_BUCKET:-}
+      UPLOAD_S3_ACCESS_KEY_ID: ${UPLOAD_S3_ACCESS_KEY_ID:-}
+      UPLOAD_S3_SECRET_ACCESS_KEY: ${UPLOAD_S3_SECRET_ACCESS_KEY:-}
+      UPLOAD_S3_PUBLIC_BASE_URL: ${UPLOAD_S3_PUBLIC_BASE_URL:-}
+      UPLOAD_S3_FORCE_PATH_STYLE: ${UPLOAD_S3_FORCE_PATH_STYLE:-false}
+    ports:
+      - "${API_PORT:-3001}:3001"
+    volumes:
+      - uploads_data:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ./apps/frontend
+      target: runner
+      args:
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3001}
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-pk_test_replace_for_local_or_pk_live_for_production}
+        NEXT_PUBLIC_PROCESSING_FEE_RATE: ${NEXT_PUBLIC_PROCESSING_FEE_RATE:-0.05}
+    container_name: earthlyn-web
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3001}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-pk_test_replace_for_local_or_pk_live_for_production}
+      NEXT_PUBLIC_PROCESSING_FEE_RATE: ${NEXT_PUBLIC_PROCESSING_FEE_RATE:-0.05}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:

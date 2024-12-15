@@ -1,0 +1,71 @@
+services:
+  - type: web
+    runtime: node
+    name: earthlyn-backend
+    repo: https://github.com/biratkdk/Earthlyn-Frontend
+    branch: main
+    plan: free
+    region: oregon
+    rootDir: apps/backend
+    buildCommand: npm install --legacy-peer-deps --include=dev && npm run build
+    startCommand: node scripts/start-production.mjs
+    healthCheckPath: /health/live
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: 7d
+      - key: MESSAGE_ENCRYPTION_KEY
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://earthlyn-biratkdks-projects.vercel.app
+      - key: FRONTEND_URL
+        value: https://earthlyn-biratkdks-projects.vercel.app
+      - key: REDIS_URL
+        sync: false
+      - key: QUEUE_DRIVER
+        value: bullmq
+      - key: QUEUE_JOB_ATTEMPTS
+        value: 3
+      - key: QUEUE_JOB_BACKOFF_MS
+        value: 5000
+      - key: QUEUE_WORKER_CONCURRENCY
+        value: 5
+      - key: THROTTLE_TTL
+        value: 60
+      - key: THROTTLE_LIMIT
+        value: 100
+      - key: BCRYPT_ROUNDS
+        value: 12
+      - key: PROCESSING_FEE_RATE
+        value: 0.05
+      - key: ECO_POINTS_PER_DOLLAR
+        value: 1
+      - key: ALLOW_ADMIN_REGISTRATION
+        value: "false"
+      - key: REQUIRE_EMAIL_VERIFICATION
+        value: "true"
+      - key: AUTO_FULFILL
+        value: "false"
+      - key: AUTO_FULFILL_STEP_HOURS
+        value: 24
+      - key: ENABLE_SWAGGER
+        value: "false"
+      - key: UPLOAD_STORAGE_DRIVER
+        value: local
+

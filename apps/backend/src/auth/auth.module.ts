@@ -13,3 +13,4 @@ import { EmailService } from "../common/services/email.service";
   exports: [AuthService],
 })
 export class AuthModule {}
+// JWT auth bootstrap

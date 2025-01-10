@@ -272,3 +272,4 @@ export const clearAuthToken = () => {
   useAuthStore.setState({ user: null, isHydrated: true });
   redirectToLoginIfProtected();
 };
+

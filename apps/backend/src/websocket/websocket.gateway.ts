@@ -125,3 +125,4 @@ export class NotificationGateway implements OnGatewayInit {
     this.server.to(`user:${userId}`).emit("notification", notification);
   }
 }
+

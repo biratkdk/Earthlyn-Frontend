@@ -10,3 +10,4 @@ import { DatabaseModule } from "../database/database.module";
   controllers: [ProductController],
 })
 export class ProductModule {}
+

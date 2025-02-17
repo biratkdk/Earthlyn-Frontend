@@ -118,3 +118,4 @@ export class ProductApprovalService {
     return buildPaginatedResponse(items, totalItems, pagination);
   }
 }
+

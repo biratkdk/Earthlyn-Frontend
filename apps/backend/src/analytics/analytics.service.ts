@@ -214,3 +214,4 @@ export class AnalyticsService {
     return rows.map((r) => ({ category: r.category, count: Number(r.count) }));
   }
 }
+

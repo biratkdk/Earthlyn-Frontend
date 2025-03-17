@@ -81,3 +81,4 @@ function parseOptionalDays(days?: string) {
   const parsed = parseInt(days, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
+

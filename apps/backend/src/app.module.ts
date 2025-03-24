@@ -92,3 +92,4 @@ import { NotificationsModule } from "./notifications/notifications.module";
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
+

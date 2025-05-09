@@ -69,3 +69,4 @@ export async function ensureXsrfToken(): Promise<string | null> {
 
   return pendingTokenRequest;
 }
+

@@ -18,7 +18,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold text-green-600">EARTHLYN</Link>
-          <div className="flex items-center gap-3 flex-wrap text-sm">
+          <div className="flex items-center gap-2 flex-wrap text-xs">
             {user ? (
               <>
                 <Link href="/products" className="text-gray-700 hover:text-green-600">Products</Link>
@@ -28,12 +28,13 @@ export function Navbar() {
                 <Link href="/messages" className="text-gray-700 hover:text-green-600">Messages</Link>
                 <Link href="/rewards" className="text-gray-700 hover:text-green-600">Rewards</Link>
                 <Link href="/refferals" className="text-gray-700 hover:text-green-600">Referrals</Link>
-                <Link href="/subscription" className="text-gray-700 hover:text-green-600">Eco-Boxes</Link>
-                <Link href="/recommendations" className="text-gray-700 hover:text-green-600">AI Recs</Link>
+                <Link href="/subscription" className="text-gray-700 hover:text-green-600">Eco-Box</Link>
+                <Link href="/recommendations" className="text-gray-700 hover:text-green-600">AI</Link>
                 {user.role === "seller" && (
                   <>
                     <Link href="/seller/kyc" className="text-gray-700 hover:text-green-600">KYC</Link>
                     <Link href="/dashboard/seller/tiers" className="text-gray-700 hover:text-green-600">Tiers</Link>
+                    <Link href="/dashboard/seller/delivery" className="text-gray-700 hover:text-green-600">Delivery</Link>
                   </>
                 )}
                 {user.role === "admin" && (
@@ -42,16 +43,17 @@ export function Navbar() {
                     <Link href="/dashboard/admin/balance" className="text-gray-700 hover:text-green-600">Balance</Link>
                     <Link href="/dashboard/admin/analytics" className="text-gray-700 hover:text-green-600">Analytics</Link>
                     <Link href="/dashboard/customer-service" className="text-gray-700 hover:text-green-600">Support</Link>
+                    <Link href="/dashboard/admin/moderation" className="text-gray-700 hover:text-green-600">Moderation</Link>
                   </>
                 )}
-                <span className="text-gray-600 text-xs border-l pl-3">{user.name} ({user.role})</span>
-                <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">Logout</button>
+                <span className="text-gray-600 text-xs border-l pl-2">{user.name} ({user.role})</span>
+                <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Logout</button>
               </>
             ) : (
               <>
                 <Link href="/products" className="text-gray-700 hover:text-green-600">Products</Link>
                 <Link href="/login" className="text-gray-700 hover:text-green-600">Login</Link>
-                <Link href="/register" className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">Register</Link>
+                <Link href="/register" className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">Register</Link>
               </>
             )}
           </div>

@@ -17,7 +17,7 @@ interface CartStore {
   clearCart(): void;
 }
 
-export const useCartStore = create<CartStore>()
+export const useCartStore = create<CartStore>()(
   persist(
     (set) => ({
       items: [],
@@ -55,4 +55,5 @@ export const useCartStore = create<CartStore>()
     {
       name: "cart-store",
     }
-  );
+  )
+);

@@ -7,7 +7,10 @@ import Link from "next/link";
 
 export default function CartPage() {
   const { user, token } = useAuthStore();
-  const { items, removeItem, updateQuantity, clearCart } = useCartStore();
+  const items = useCartStore((state) => state.items);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const clearCart = useCartStore((state) => state.clearCart);
   const [loading, setLoading] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

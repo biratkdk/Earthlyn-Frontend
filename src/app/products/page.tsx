@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store/auth";
@@ -13,10 +13,17 @@ interface Product {
   seller?: { name: string };
 }
 
+const MOCK_PRODUCTS: Product[] = [
+  { id: "1", name: "Eco Tote Bag", price: 25, stock: 50, seller: { name: "EcoMerch Co" } },
+  { id: "2", name: "Bamboo Utensils", price: 15, stock: 30, seller: { name: "Sustainable Living" } },
+  { id: "3", name: "Reusable Straws", price: 12, stock: 100, seller: { name: "Eco Materials Ltd" } },
+  { id: "4", name: "Organic Cotton Shirt", price: 45, stock: 20, seller: { name: "Fair Trade Fashion" } },
+];
+
 export default function Products() {
   const { token } = useAuthStore();
   const { addItem } = useCartStore();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -29,10 +36,18 @@ export default function Products() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/products`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      const data = await response.json();
-      setProducts(data || []);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      } else {
+        setProducts(MOCK_PRODUCTS);
+      }
     } catch (error) {
-      console.error("Failed to fetch products:", error);
+      console.warn("Backend unavailable, using mock data:", error);
+      setProducts(MOCK_PRODUCTS);
     } finally {
       setLoading(false);
     }

@@ -1,65 +1,121 @@
-import Image from "next/image";
+﻿"use client";
+
+import Link from "next/link";
+import { useAuthStore } from "@/lib/store/auth";
 
 export default function Home() {
+  const { user } = useAuthStore();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-green-50 to-blue-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+            Welcome to EARTHLYN
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Discover and share sustainable products. Buy from trusted sellers, 
+            sell your eco-friendly items globally.
           </p>
+          <div className="flex justify-center gap-4">
+            <Link
+              href="/products"
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold"
+            >
+              Start Shopping
+            </Link>
+            {!user && (
+              <Link
+                href="/register"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold"
+              >
+                Become a Seller
+              </Link>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 text-center bg-gray-50 rounded-lg">
+              <div className="text-4xl mb-4">🛍️</div>
+              <h3 className="text-xl font-bold mb-2">Browse Products</h3>
+              <p className="text-gray-600">
+                Explore thousands of sustainable products from verified sellers worldwide.
+              </p>
+            </div>
+            <div className="p-6 text-center bg-gray-50 rounded-lg">
+              <div className="text-4xl mb-4">🛒</div>
+              <h3 className="text-xl font-bold mb-2">Easy Checkout</h3>
+              <p className="text-gray-600">
+                Secure, fast checkout process. Add items to cart and place orders instantly.
+              </p>
+            </div>
+            <div className="p-6 text-center bg-gray-50 rounded-lg">
+              <div className="text-4xl mb-4">📦</div>
+              <h3 className="text-xl font-bold mb-2">Track Orders</h3>
+              <p className="text-gray-600">
+                Monitor your orders in real-time. Quick support from our team.
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-green-600 text-white py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-lg mb-8 opacity-90">
+            {user
+              ? `Welcome back, ${user.name}! Check your dashboard now.`
+              : "Join thousands of sustainable product lovers and ethical sellers."}
+          </p>
+          <div className="flex justify-center gap-4">
+            {user ? (
+              <Link
+                href={
+                  user.role === "buyer"
+                    ? "/dashboard"
+                    : user.role === "seller"
+                      ? "/dashboard/seller"
+                      : "/dashboard/admin"
+                }
+                className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-bold"
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-bold"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-lg font-bold border border-white"
+                >
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-400 py-8">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p>&copy; 2026 EARTHLYN. Sustainable products for a better future.</p>
+        </div>
+      </footer>
     </div>
   );
 }

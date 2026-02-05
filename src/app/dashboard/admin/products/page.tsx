@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/store/auth";
@@ -20,8 +20,8 @@ export default function ProductApprovalPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await apiClient.get("/product-approval/pending");
-      setProducts(response.data.data || []);
+      const { data } = await apiClient.get("/product-approval/pending");
+      setProducts(data || []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch products");
     } finally {
@@ -31,7 +31,7 @@ export default function ProductApprovalPage() {
 
   const handleApprove = async (productId: string) => {
     try {
-      await apiClient.post(`/product-approval/approve`, { productId });
+      await apiClient.post(`/product-approval/${productId}/approve`);
       setProducts(products.filter(p => p.id !== productId));
     } catch (err: any) {
       alert("Error approving product: " + (err.response?.data?.message || err.message));
@@ -40,7 +40,7 @@ export default function ProductApprovalPage() {
 
   const handleReject = async (productId: string) => {
     try {
-      await apiClient.post(`/product-approval/reject`, { productId });
+      await apiClient.post(`/product-approval/${productId}/reject`);
       setProducts(products.filter(p => p.id !== productId));
     } catch (err: any) {
       alert("Error rejecting product: " + (err.response?.data?.message || err.message));
@@ -79,7 +79,7 @@ export default function ProductApprovalPage() {
                 <tr key={product.id} className="border-b hover:bg-gray-50">
                   <td className="px-6 py-4">{product.name}</td>
                   <td className="px-6 py-4">{product.seller.name}</td>
-                  <td className="px-6 py-4">₹{product.price.toFixed(2)}</td>
+                  <td className="px-6 py-4">?{product.price.toFixed(2)}</td>
                   <td className="px-6 py-4"><span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">{product.status}</span></td>
                   <td className="px-6 py-4">{new Date(product.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4 flex gap-2">

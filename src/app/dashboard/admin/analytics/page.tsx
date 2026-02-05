@@ -17,8 +17,8 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      const { data } = await apiClient.get("/analytics/overview");
-      setStats(data.data || {});
+      const { data } = await apiClient.get("/admin/analytics/dashboard");
+      setStats(data || {});
     } catch (e: any) {
       console.error(e);
     } finally {
@@ -39,11 +39,11 @@ export default function AnalyticsPage() {
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <p className="text-gray-600">Total Revenue</p>
-          <p className="text-4xl font-bold text-green-600">?{stats.totalRevenue.toFixed(2)}</p>
+          <p className="text-4xl font-bold text-green-600">${stats.totalRevenue.toFixed(2)}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <p className="text-gray-600">Avg Order Value</p>
-          <p className="text-4xl font-bold text-purple-600">?{stats.avgOrderValue.toFixed(2)}</p>
+          <p className="text-4xl font-bold text-purple-600">${stats.avgOrderValue.toFixed(2)}</p>
         </div>
       </div>
       <div className="bg-white p-6 rounded-lg shadow">

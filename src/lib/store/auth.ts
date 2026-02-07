@@ -1,11 +1,15 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
+
+type AuthRole = "ADMIN" | "SELLER" | "BUYER" | "CUSTOMER_SERVICE";
 
 interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: "buyer" | "seller" | "admin";
+  role: AuthRole;
 }
 
 interface AuthStore {
@@ -13,7 +17,7 @@ interface AuthStore {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, role: string) => Promise<void>;
+  register: (email: string, password: string, name: string, role: AuthRole | string) => Promise<void>;
   logout: () => void;
   setUser: (user: AuthUser) => void;
   setToken: (token: string) => void;
@@ -31,14 +35,14 @@ export const useAuthStore = create<AuthStore>()(persist(
     login: async (email, password) => {
       set({ isLoading: true });
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
+        const response = await fetch(`${BACKEND_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
         const data = await response.json();
         if (response.ok) {
-          set({ user: data.user, token: data.access_token });
+          set({ user: data.user, token: data.accessToken });
         } else {
           throw new Error(data.message || "Login failed");
         }
@@ -50,14 +54,15 @@ export const useAuthStore = create<AuthStore>()(persist(
     register: async (email, password, name, role) => {
       set({ isLoading: true });
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`, {
+        const normalizedRole = role.toString().trim().toUpperCase();
+        const response = await fetch(`${BACKEND_URL}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name, role }),
+          body: JSON.stringify({ email, password, name, role: normalizedRole }),
         });
         const data = await response.json();
         if (response.ok) {
-          set({ user: data.user, token: data.access_token });
+          set({ user: data.user, token: data.accessToken });
         } else {
           throw new Error(data.message || "Registration failed");
         }

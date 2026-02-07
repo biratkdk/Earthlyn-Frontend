@@ -1,56 +1,101 @@
 "use client";
 import { useState, useEffect } from "react";
-import { apiClient } from "@/lib/api/client";
+import apiClient from "@/lib/api/client";
 import { useAuthStore } from "@/lib/store/auth";
-
-interface Analytics { totalUsers: number; totalRevenue: number; avgOrderValue: number; }
+import { useRouter } from "next/navigation";
 
 export default function AnalyticsPage() {
   const { user } = useAuthStore();
-  const [stats, setStats] = useState<Analytics>({ totalUsers: 0, totalRevenue: 0, avgOrderValue: 0 });
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [eco, setEco] = useState<any>(null);
+  const [referrals, setReferrals] = useState<any>(null);
+  const [subs, setSubs] = useState<any>(null);
+  const [retention, setRetention] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    if (user?.role !== "admin") return;
-    fetchAnalytics();
+    if (!user || user.role !== "ADMIN") {
+      router.push("/login");
+      return;
+    }
+    loadAll();
   }, [user]);
 
-  const fetchAnalytics = async () => {
-    try {
-      const { data } = await apiClient.get("/admin/analytics/dashboard");
-      setStats(data || {});
-    } catch (e: any) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const loadAll = async () => {
+    const [dash, ecoRes, ref, sub, ret, cat] = await Promise.all([
+      apiClient.get("/admin/analytics/dashboard"),
+      apiClient.get("/admin/analytics/eco-impact"),
+      apiClient.get("/admin/analytics/referrals"),
+      apiClient.get("/admin/analytics/subscriptions"),
+      apiClient.get("/admin/analytics/retention"),
+      apiClient.get("/admin/analytics/categories"),
+    ]);
+    setDashboard(dash.data);
+    setEco(ecoRes.data);
+    setReferrals(ref.data);
+    setSubs(sub.data);
+    setRetention(ret.data);
+    setCategories(cat.data || []);
   };
 
-  if (!user || user.role !== "admin") return <div className="p-8 text-red-600">Admin only</div>;
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (!dashboard) return <div className="p-8">Loading...</div>;
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6 text-green-600">Analytics Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-gray-600">Total Users</p>
-          <p className="text-4xl font-bold text-blue-600">{stats.totalUsers}</p>
+    <div className="max-w-7xl mx-auto px-4 py-10">
+      <h1 className="text-4xl">Analytics</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div className="card p-6">
+          <p className="text-sm text-gray-600">Total Revenue</p>
+          <p className="text-3xl font-semibold text-[var(--accent)]">${Number(dashboard.totalRevenue || 0).toFixed(2)}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-gray-600">Total Revenue</p>
-          <p className="text-4xl font-bold text-green-600">${stats.totalRevenue.toFixed(2)}</p>
+        <div className="card p-6">
+          <p className="text-sm text-gray-600">Total Orders</p>
+          <p className="text-3xl font-semibold text-[var(--accent)]">{dashboard.totalOrders}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-gray-600">Avg Order Value</p>
-          <p className="text-4xl font-bold text-purple-600">${stats.avgOrderValue.toFixed(2)}</p>
+        <div className="card p-6">
+          <p className="text-sm text-gray-600">Total Users</p>
+          <p className="text-3xl font-semibold text-[var(--accent)]">{dashboard.totalUsers}</p>
         </div>
       </div>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">Sales Trends</h2>
-        <div className="h-64 flex items-end justify-around">
-          {[30, 45, 35, 60, 50, 70, 65].map((h, i) => (
-            <div key={i} className="bg-green-500 rounded-t" style={{ width: "12%", height: `${h * 3}px` }}></div>
+
+      <div className="grid md:grid-cols-2 gap-6 mt-8">
+        <div className="card p-6">
+          <h3 className="text-xl">Eco Impact</h3>
+          <p className="text-gray-600 mt-2">Eco Products: {eco?.ecoFriendlyProducts}</p>
+          <p className="text-gray-600">Carbon Saved: {eco?.carbonSaved}</p>
+          <p className="text-gray-600">Trees Planted: {eco?.treesPlanted}</p>
+        </div>
+        <div className="card p-6">
+          <h3 className="text-xl">Retention</h3>
+          <p className="text-gray-600 mt-2">Total Buyers: {retention?.totalBuyers}</p>
+          <p className="text-gray-600">Repeat Buyers: {retention?.repeatBuyers}</p>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6 mt-8">
+        <div className="card p-6">
+          <h3 className="text-xl">Referrals</h3>
+          <p className="text-gray-600 mt-2">Total: {referrals?.total}</p>
+          <p className="text-gray-600">Pending: {referrals?.pending}</p>
+          <p className="text-gray-600">Completed: {referrals?.completed}</p>
+        </div>
+        <div className="card p-6">
+          <h3 className="text-xl">Subscriptions</h3>
+          <p className="text-gray-600 mt-2">Active: {subs?.active}</p>
+          <p className="text-gray-600">Cancelled: {subs?.cancelled}</p>
+          <p className="text-gray-600">Expired: {subs?.expired}</p>
+        </div>
+      </div>
+
+      <div className="card p-6 mt-8">
+        <h3 className="text-xl">Top Categories</h3>
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+          {categories.map((c: any) => (
+            <div key={c.category} className="rounded-xl border border-black/10 p-4">
+              <p className="font-semibold">{c.category}</p>
+              <p className="text-sm text-gray-600">{c.count} products</p>
+            </div>
           ))}
         </div>
       </div>

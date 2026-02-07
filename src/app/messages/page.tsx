@@ -3,31 +3,14 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store/auth";
 import { useRouter } from "next/navigation";
-
-interface Message {
-  id: string;
-  senderId: string;
-  senderName?: string;
-  content: string;
-  timestamp: string;
-  read: boolean;
-}
-
-interface Conversation {
-  id: string;
-  otherId: string;
-  otherName: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  unread: number;
-}
+import apiClient from "@/lib/api/client";
 
 export default function Messages() {
   const router = useRouter();
-  const { user, token } = useAuthStore();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { user } = useAuthStore();
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -41,10 +24,7 @@ export default function Messages() {
 
   const fetchConversations = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/messages/conversations`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
+      const { data } = await apiClient.get("/messages/conversations");
       setConversations(data || []);
     } catch (error) {
       console.error("Failed to fetch conversations:", error);
@@ -53,13 +33,9 @@ export default function Messages() {
     }
   };
 
-  const fetchMessages = async (conversationId: string) => {
+  const fetchMessages = async (otherId: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/messages/${conversationId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const data = await response.json();
+      const { data } = await apiClient.get(`/messages/conversation/${otherId}`);
       setMessages(data || []);
     } catch (error) {
       console.error("Failed to fetch messages:", error);
@@ -67,22 +43,16 @@ export default function Messages() {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+    if (!newMessage.trim() || !selectedUserId) return;
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/messages/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          receiverId: selectedConversation,
-          content: newMessage,
-        }),
+      await apiClient.post("/messages", {
+        receiverId: selectedUserId,
+        content: newMessage,
       });
       setNewMessage("");
-      fetchMessages(selectedConversation);
+      fetchMessages(selectedUserId);
+      fetchConversations();
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -91,46 +61,43 @@ export default function Messages() {
   if (loading) return <div className="text-center py-20">Loading messages...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 h-screen flex flex-col">
-      <h1 className="text-3xl font-bold mb-6">Messages</h1>
+    <div className="max-w-7xl mx-auto px-4 py-8 h-[calc(100vh-120px)] flex flex-col">
+      <h1 className="text-4xl mb-6">Messages</h1>
 
       <div className="flex gap-6 flex-1 overflow-hidden">
-        {/* Conversations List */}
         <div className="w-80 border-r overflow-y-auto">
           {conversations.length === 0 ? (
             <p className="text-gray-500 py-4">No conversations yet</p>
           ) : (
-            conversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => {
-                  setSelectedConversation(conv.otherId);
-                  fetchMessages(conv.id);
-                }}
-                className={`w-full p-4 text-left border-b hover:bg-gray-50 transition ${
-                  selectedConversation === conv.otherId ? "bg-blue-50 border-l-4 border-blue-600" : ""
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold">{conv.otherName}</h3>
-                  {conv.unread > 0 && (
-                    <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                      {conv.unread}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600 truncate">{conv.lastMessage}</p>
-                <p className="text-xs text-gray-400">{new Date(conv.lastMessageTime).toLocaleString()}</p>
-              </button>
-            ))
+            conversations.map((conv) => {
+              const otherId = conv.senderId === user?.id ? conv.receiverId : conv.senderId;
+              const otherName = conv.senderId === user?.id ? conv.receiver?.name : conv.sender?.name;
+              return (
+                <button
+                  key={conv.id}
+                  onClick={() => {
+                    setSelectedUserId(otherId);
+                    fetchMessages(otherId);
+                  }}
+                  className={`w-full p-4 text-left border-b hover:bg-gray-50 transition ${
+                    selectedUserId === otherId ? "bg-[var(--accent)]/10" : ""
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold">{otherName || "User"}</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 truncate">{conv.content}</p>
+                  <p className="text-xs text-gray-400">{new Date(conv.createdAt).toLocaleString()}</p>
+                </button>
+              );
+            })
           )}
         </div>
 
-        {/* Messages Display */}
         <div className="flex-1 flex flex-col">
-          {selectedConversation ? (
+          {selectedUserId ? (
             <>
-              <div className="flex-1 overflow-y-auto bg-gray-50 rounded-lg mb-4 p-6 space-y-4">
+              <div className="flex-1 overflow-y-auto bg-white/60 rounded-lg mb-4 p-6 space-y-4">
                 {messages.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">No messages yet. Start the conversation!</p>
                 ) : (
@@ -140,15 +107,15 @@ export default function Messages() {
                       className={`flex ${msg.senderId === user?.id ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-xs p-4 rounded-lg ${
+                        className={`max-w-xs p-4 rounded-2xl ${
                           msg.senderId === user?.id
-                            ? "bg-blue-600 text-white"
-                            : "bg-white border border-gray-300"
+                            ? "bg-[var(--accent)] text-white"
+                            : "bg-white border border-black/10"
                         }`}
                       >
                         <p>{msg.content}</p>
                         <p className="text-xs mt-2 opacity-70">
-                          {new Date(msg.timestamp).toLocaleTimeString()}
+                          {new Date(msg.createdAt).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
@@ -156,22 +123,16 @@ export default function Messages() {
                 )}
               </div>
 
-              {/* Input Field */}
               <div className="flex gap-2">
                 <input
                   type="text"
                   placeholder="Type a message..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  className="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  className="flex-1 rounded-xl border border-black/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
                 />
-                <button
-                  onClick={handleSendMessage}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold"
-                >
-                  Send
-                </button>
+                <button onClick={handleSendMessage} className="btn-primary">Send</button>
               </div>
             </>
           ) : (

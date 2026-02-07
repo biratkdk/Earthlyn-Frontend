@@ -4,26 +4,23 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store/auth";
 import { useCartStore } from "@/lib/store/cart";
 import Link from "next/link";
+import apiClient from "@/lib/api/client";
 
 interface Product {
   id: string;
   name: string;
   price: number;
   stock: number;
-  seller?: { name: string };
+  category: string;
+  ecoScore: number;
+  approvalStatus: string;
+  seller?: { user?: { name: string } };
 }
-
-const MOCK_PRODUCTS: Product[] = [
-  { id: "1", name: "Eco Tote Bag", price: 25, stock: 50, seller: { name: "EcoMerch Co" } },
-  { id: "2", name: "Bamboo Utensils", price: 15, stock: 30, seller: { name: "Sustainable Living" } },
-  { id: "3", name: "Reusable Straws", price: 12, stock: 100, seller: { name: "Eco Materials Ltd" } },
-  { id: "4", name: "Organic Cotton Shirt", price: 45, stock: 20, seller: { name: "Fair Trade Fashion" } },
-];
 
 export default function Products() {
   const { token } = useAuthStore();
   const { addItem } = useCartStore();
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -33,21 +30,12 @@ export default function Products() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/products`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setProducts(data);
-        }
-      } else {
-        setProducts(MOCK_PRODUCTS);
+      const { data } = await apiClient.get("/products");
+      if (Array.isArray(data)) {
+        setProducts(data.filter((p: Product) => p.approvalStatus === "APPROVED"));
       }
     } catch (error) {
-      console.warn("Backend unavailable, using mock data:", error);
-      setProducts(MOCK_PRODUCTS);
+      console.warn("Failed to load products:", error);
     } finally {
       setLoading(false);
     }
@@ -61,7 +49,6 @@ export default function Products() {
       quantity: 1,
       sellerId: "",
     });
-    alert(`${product.name} added to cart`);
   };
 
   const filteredProducts = products.filter((p) =>
@@ -69,12 +56,10 @@ export default function Products() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <Link href="/cart" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-          View Cart
-        </Link>
+    <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <h1 className="text-4xl">Eco Products</h1>
+        <Link href="/cart" className="btn-secondary">View Cart</Link>
       </div>
 
       <div className="mb-8">
@@ -83,7 +68,7 @@ export default function Products() {
           placeholder="Search products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-xl border border-black/10 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
         />
       </div>
 
@@ -92,29 +77,24 @@ export default function Products() {
       ) : filteredProducts.length === 0 ? (
         <p className="text-gray-500">No products found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow hover:shadow-lg transition">
-              <div className="p-4">
-                <h3 className="font-bold text-lg mb-2">{product.name}</h3>
-                <p className="text-gray-600 text-sm mb-2">
-                  Seller: {product.seller?.name || "Unknown"}
-                </p>
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-xl font-bold text-blue-600">${product.price}</span>
-                  <span className="text-sm text-gray-500">{product.stock} in stock</span>
-                </div>
+            <div key={product.id} className="card p-5 flex flex-col gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-[var(--accent)]">{product.category}</p>
+                <h3 className="text-xl mt-1">{product.name}</h3>
+                <p className="text-sm text-gray-600">Seller: {product.seller?.user?.name || "Verified Seller"}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-semibold text-[var(--accent)]">${product.price}</span>
+                <span className="badge">Eco {product.ecoScore}</span>
+              </div>
+              <div className="flex gap-3">
+                <Link href={`/products/preview/${product.id}`} className="btn-secondary w-full text-center">View</Link>
                 {product.stock > 0 ? (
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition"
-                  >
-                    Add to Cart
-                  </button>
+                  <button onClick={() => handleAddToCart(product)} className="btn-primary w-full">Add</button>
                 ) : (
-                  <button disabled className="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
-                    Out of Stock
-                  </button>
+                  <button disabled className="w-full rounded-full bg-gray-200 text-gray-500 py-2">Out</button>
                 )}
               </div>
             </div>

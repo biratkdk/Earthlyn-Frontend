@@ -4,6 +4,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/auth";
 
+const roleDashboardPath = (role?: string) => {
+  switch (role) {
+    case "SELLER":
+      return "/dashboard/seller";
+    case "ADMIN":
+      return "/dashboard/admin";
+    case "CUSTOMER_SERVICE":
+      return "/dashboard/customer-service";
+    default:
+      return "/dashboard";
+  }
+};
+
 export function Navbar() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
@@ -14,49 +27,46 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-green-600">EARTHLYN</Link>
-          <div className="flex items-center gap-2 flex-wrap text-xs">
-            {user ? (
-              <>
-                <Link href="/products" className="text-gray-700 hover:text-green-600">Products</Link>
-                <Link href="/cart" className="text-gray-700 hover:text-green-600">Cart</Link>
-                <Link href="/dashboard" className="text-gray-700 hover:text-green-600">Dashboard</Link>
-                <Link href="/orders" className="text-gray-700 hover:text-green-600">Orders</Link>
-                <Link href="/messages" className="text-gray-700 hover:text-green-600">Messages</Link>
-                <Link href="/rewards" className="text-gray-700 hover:text-green-600">Rewards</Link>
-                <Link href="/refferals" className="text-gray-700 hover:text-green-600">Referrals</Link>
-                <Link href="/subscription" className="text-gray-700 hover:text-green-600">Eco-Box</Link>
-                <Link href="/recommendations" className="text-gray-700 hover:text-green-600">AI</Link>
-                {user.role === "seller" && (
-                  <>
-                    <Link href="/seller/kyc" className="text-gray-700 hover:text-green-600">KYC</Link>
-                    <Link href="/dashboard/seller/tiers" className="text-gray-700 hover:text-green-600">Tiers</Link>
-                    <Link href="/dashboard/seller/delivery" className="text-gray-700 hover:text-green-600">Delivery</Link>
-                  </>
-                )}
-                {user.role === "admin" && (
-                  <>
-                    <Link href="/dashboard/admin/products" className="text-gray-700 hover:text-green-600">Approve</Link>
-                    <Link href="/dashboard/admin/balance" className="text-gray-700 hover:text-green-600">Balance</Link>
-                    <Link href="/dashboard/admin/analytics" className="text-gray-700 hover:text-green-600">Analytics</Link>
-                    <Link href="/dashboard/customer-service" className="text-gray-700 hover:text-green-600">Support</Link>
-                    <Link href="/dashboard/admin/moderation" className="text-gray-700 hover:text-green-600">Moderation</Link>
-                  </>
-                )}
-                <span className="text-gray-600 text-xs border-l pl-2">{user.name} ({user.role})</span>
-                <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Logout</button>
-              </>
-            ) : (
-              <>
-                <Link href="/products" className="text-gray-700 hover:text-green-600">Products</Link>
-                <Link href="/login" className="text-gray-700 hover:text-green-600">Login</Link>
-                <Link href="/register" className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">Register</Link>
-              </>
-            )}
-          </div>
+    <nav className="sticky top-0 z-50 border-b border-black/5 bg-white/70 backdrop-blur">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+        <Link href="/" className="text-2xl font-semibold text-[var(--accent)]">EARTHLYN</Link>
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <Link href="/products" className="hover:text-[var(--accent)]">Products</Link>
+          <Link href="/cart" className="hover:text-[var(--accent)]">Cart</Link>
+          {user && (
+            <Link href={roleDashboardPath(user.role)} className="hover:text-[var(--accent)]">Dashboard</Link>
+          )}
+          <Link href="/orders" className="hover:text-[var(--accent)]">Orders</Link>
+          <Link href="/messages" className="hover:text-[var(--accent)]">Messages</Link>
+          <Link href="/disputes" className="hover:text-[var(--accent)]">Disputes</Link>
+          <Link href="/rewards" className="hover:text-[var(--accent)]">Rewards</Link>
+          <Link href="/refferals" className="hover:text-[var(--accent)]">Referrals</Link>
+          <Link href="/subscription" className="hover:text-[var(--accent)]">Eco-Box</Link>
+          <Link href="/recommendations" className="hover:text-[var(--accent)]">AI</Link>
+          {user?.role === "SELLER" && (
+            <>
+              <Link href="/seller/kyc" className="hover:text-[var(--accent)]">KYC</Link>
+              <Link href="/dashboard/seller/tiers" className="hover:text-[var(--accent)]">Tiers</Link>
+              <Link href="/dashboard/seller/delivery" className="hover:text-[var(--accent)]">Delivery</Link>
+            </>
+          )}
+          {(user?.role === "ADMIN" || user?.role === "CUSTOMER_SERVICE") && (
+            <>
+              <Link href="/dashboard/admin/products" className="hover:text-[var(--accent)]">Approve</Link>
+              <Link href="/dashboard/admin/balance" className="hover:text-[var(--accent)]">Balance</Link>
+              <Link href="/dashboard/admin/analytics" className="hover:text-[var(--accent)]">Analytics</Link>
+              <Link href="/dashboard/admin/moderation" className="hover:text-[var(--accent)]">Moderation</Link>
+              <Link href="/dashboard/customer-service" className="hover:text-[var(--accent)]">Support</Link>
+            </>
+          )}
+          {!user ? (
+            <>
+              <Link href="/login" className="btn-secondary">Login</Link>
+              <Link href="/register" className="btn-primary">Register</Link>
+            </>
+          ) : (
+            <button onClick={handleLogout} className="btn-primary">Logout</button>
+          )}
         </div>
       </div>
     </nav>

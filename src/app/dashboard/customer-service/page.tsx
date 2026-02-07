@@ -1,24 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
-import { apiClient } from "@/lib/api/client";
+import apiClient from "@/lib/api/client";
 import { useAuthStore } from "@/lib/store/auth";
-
-interface Query { id: string; customer: { name: string }; subject: string; status: string; }
+import { useRouter } from "next/navigation";
 
 export default function CustomerServicePage() {
   const { user } = useAuthStore();
-  const [queries, setQueries] = useState<Query[]>([]);
+  const router = useRouter();
+  const [disputes, setDisputes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.role !== "admin") return;
-    fetchQueries();
+    if (!user || (user.role !== "CUSTOMER_SERVICE" && user.role !== "ADMIN")) {
+      router.push("/login");
+      return;
+    }
+    fetchDisputes();
   }, [user]);
 
-  const fetchQueries = async () => {
+  const fetchDisputes = async () => {
     try {
-      const { data } = await apiClient.get("/customer-service/queries");
-      setQueries(data.data || []);
+      const { data } = await apiClient.get("/admin/disputes");
+      setDisputes(data || []);
     } catch (e: any) {
       console.error(e);
     } finally {
@@ -26,43 +29,40 @@ export default function CustomerServicePage() {
     }
   };
 
-  const handleResolve = async (queryId: string) => {
-    try {
-      await apiClient.post(`/customer-service/resolve`, { queryId });
-      setQueries(queries.filter(q => q.id !== queryId));
-    } catch (e: any) {
-      alert("Error: " + (e.response?.data?.message || e.message));
-    }
+  const resolveDispute = async (id: string) => {
+    await apiClient.patch(`/admin/disputes/${id}`, { status: "RESOLVED", resolution: "Resolved by support" });
+    fetchDisputes();
   };
 
-  if (!user || user.role !== "admin") return <div className="p-8 text-red-600">Admin only</div>;
   if (loading) return <div className="p-8">Loading...</div>;
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6 text-green-600">Customer Service Queue</h1>
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-100 border-b">
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      <h1 className="text-4xl">Customer Service</h1>
+      <div className="card mt-8 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-3 text-left font-semibold">Query ID</th>
-              <th className="px-6 py-3 text-left font-semibold">Customer</th>
-              <th className="px-6 py-3 text-left font-semibold">Subject</th>
-              <th className="px-6 py-3 text-left font-semibold">Status</th>
-              <th className="px-6 py-3 text-left font-semibold">Action</th>
+              <th className="px-6 py-3 text-left">Dispute</th>
+              <th className="px-6 py-3 text-left">Order</th>
+              <th className="px-6 py-3 text-left">Status</th>
+              <th className="px-6 py-3 text-left">Priority</th>
+              <th className="px-6 py-3 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
-            {queries.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">No queries</td></tr>
+            {disputes.length === 0 ? (
+              <tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">No disputes</td></tr>
             ) : (
-              queries.map((q) => (
-                <tr key={q.id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-4">{q.id}</td>
-                  <td className="px-6 py-4">{q.customer.name}</td>
-                  <td className="px-6 py-4">{q.subject}</td>
-                  <td className="px-6 py-4"><span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">{q.status}</span></td>
-                  <td className="px-6 py-4"><button onClick={() => handleResolve(q.id)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Resolve</button></td>
+              disputes.map((d) => (
+                <tr key={d.id} className="border-b">
+                  <td className="px-6 py-4">{d.id}</td>
+                  <td className="px-6 py-4">{d.orderId}</td>
+                  <td className="px-6 py-4"><span className="badge">{d.status}</span></td>
+                  <td className="px-6 py-4">{d.priority}</td>
+                  <td className="px-6 py-4">
+                    <button onClick={() => resolveDispute(d.id)} className="btn-primary">Resolve</button>
+                  </td>
                 </tr>
               ))
             )}

@@ -16,11 +16,13 @@ interface AuthStore {
   user: AuthUser | null;
   token: string | null;
   isLoading: boolean;
+  isHydrated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role: AuthRole | string) => Promise<void>;
   logout: () => void;
   setUser: (user: AuthUser) => void;
   setToken: (token: string) => void;
+  setHydrated: (hydrated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(persist(
@@ -28,7 +30,9 @@ export const useAuthStore = create<AuthStore>()(persist(
     user: null,
     token: null,
     isLoading: false,
+    isHydrated: false,
 
+    setHydrated: (hydrated) => set({ isHydrated: hydrated }),
     setUser: (user) => set({ user }),
     setToken: (token) => set({ token }),
 
@@ -42,7 +46,7 @@ export const useAuthStore = create<AuthStore>()(persist(
         });
         const data = await response.json();
         if (response.ok) {
-          set({ user: data.user, token: data.accessToken });
+          set({ user: data.user, token: data.accessToken, isHydrated: true });
         } else {
           throw new Error(data.message || "Login failed");
         }
@@ -62,7 +66,7 @@ export const useAuthStore = create<AuthStore>()(persist(
         });
         const data = await response.json();
         if (response.ok) {
-          set({ user: data.user, token: data.accessToken });
+          set({ user: data.user, token: data.accessToken, isHydrated: true });
         } else {
           throw new Error(data.message || "Registration failed");
         }
@@ -71,10 +75,15 @@ export const useAuthStore = create<AuthStore>()(persist(
       }
     },
 
-    logout: () => set({ user: null, token: null }),
+    logout: () => set({ user: null, token: null, isHydrated: false }),
   }),
   {
     name: "auth-storage",
+    onRehydrateStorage: () => (state) => {
+      if (state) {
+        state.isHydrated = true;
+      }
+    },
   }
 ));
 
@@ -90,5 +99,5 @@ export const setAuthToken = (token: string) => {
 };
 
 export const clearAuthToken = () => {
-  useAuthStore.setState({ user: null, token: null });
+  useAuthStore.setState({ user: null, token: null, isHydrated: false });
 };

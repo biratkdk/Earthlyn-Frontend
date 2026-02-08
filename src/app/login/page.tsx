@@ -8,7 +8,25 @@ import { getDashboardPath } from "@/lib/utils/routes";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, user, isHydrated } = useAuthStore();
+  const { login, isLoading, user, isHydrated, token } = useAuthStore();
+  const [debugInfo, setDebugInfo] = useState<string>("Loading...");
+
+  useEffect(() => {
+    // Update debug info
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('auth-storage');
+      const parsed = stored ? JSON.parse(stored) : null;
+      const info = {
+        isHydrated,
+        hasToken: !!token,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
+        storedToken: parsed?.state?.token ? 'exists' : 'not found',
+        user,
+      };
+      setDebugInfo(JSON.stringify(info, null, 2));
+    }
+  }, [isHydrated, user, token]);
+
   useEffect(() => {
     if (isHydrated && user) {
       router.push(getDashboardPath(user.role));
@@ -64,7 +82,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full rounded-xl border border-black/10 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-              placeholder="????????"
+              placeholder="~~~~~~~~"
             />
           </div>
 
@@ -74,13 +92,18 @@ export default function LoginPage() {
         </form>
 
         <p className="text-sm text-gray-600 mt-6">
-          New here?{" "}
+          New here?{ }
           <Link href="/register" className="text-[var(--accent)] hover:underline">
             Create an account
           </Link>
         </p>
+
+        {/* DEBUG INFO - Remove after testing */}
+        <details className="mt-8 p-4 bg-gray-100 rounded text-xs">
+          <summary className="cursor-pointer font-bold text-gray-700">Debug Info</summary>
+          <pre className="mt-2 whitespace-pre-wrap text-gray-600">{debugInfo}</pre>
+        </details>
       </div>
     </div>
   );
 }
-

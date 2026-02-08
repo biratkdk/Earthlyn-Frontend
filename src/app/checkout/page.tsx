@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store/auth";
@@ -140,7 +140,7 @@ export default function Checkout() {
 
             <div className="border-t pt-6">
               <h2 className="text-2xl font-semibold mb-4">Payment</h2>
-              <p className="text-sm text-gray-600">Stripe test mode � payment intent will be confirmed automatically.</p>
+              <p className="text-sm text-gray-600">Stripe test mode  payment intent will be confirmed automatically.</p>
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full">

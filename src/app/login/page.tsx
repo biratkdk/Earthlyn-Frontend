@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -58,7 +58,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full rounded-xl border border-black/10 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-              placeholder="••••••••"
+              placeholder="Â•Â•Â•Â•Â•Â•Â•Â•"
             />
           </div>
 

@@ -40,8 +40,9 @@ apiClient.interceptors.response.use(
         window.location.href = '/login';
       }
     }
-    return Promise.reject(error);
+    console.error("[API] Error:", error?.status, error?.data); return Promise.reject(error);
   }
 );
 
 export default apiClient;
+

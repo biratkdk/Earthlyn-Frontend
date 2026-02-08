@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store/auth";
@@ -24,13 +24,13 @@ export default function TicketDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !params.id) router.push("/login");
+    if (!user || !params?.id) router.push("/login");
     else loadTicket();
-  }, [params.id, user]);
+  }, [params?.id, user]);
 
   const loadTicket = async () => {
     try {
-      const { data } = await apiClient.get(`/tickets/${params.id}`);
+      const { data } = await apiClient.get(`/tickets/${params?.id}`);
       setTicket(data);
     } catch (error) {
       console.error("Failed to load ticket:", error);
@@ -42,7 +42,7 @@ export default function TicketDetailPage() {
   const handleAddResponse = async () => {
     if (!responseText.trim()) return;
     try {
-      await apiClient.post(`/tickets/${params.id}/response`, { message: responseText });
+      await apiClient.post(`/tickets/${params?.id}/response`, { message: responseText });
       setResponseText("");
       loadTicket();
     } catch (error) {

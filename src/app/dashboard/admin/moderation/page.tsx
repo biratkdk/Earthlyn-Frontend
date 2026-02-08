@@ -5,7 +5,7 @@ import { useAuthStore } from "@/lib/store/auth";
 import { useRouter } from "next/navigation";
 
 export default function ModerationPage() {
-  const { user } = useAuthStore();
+  const { user, isHydrated } = useAuthStore();
   const router = useRouter();
   const [flags, setFlags] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +16,7 @@ export default function ModerationPage() {
       return;
     }
     fetchFlags();
-  }, [user]);
+  }, [user, isHydrated]);
 
   const fetchFlags = async () => {
     try {
@@ -35,6 +35,11 @@ export default function ModerationPage() {
   };
 
   if (loading) return <div className="p-8">Loading...</div>;
+
+  
+  if (!isHydrated) {
+    return <div className="max-w-7xl mx-auto px-4 py-10">Loading...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -74,4 +79,6 @@ export default function ModerationPage() {
     </div>
   );
 }
+
+
 

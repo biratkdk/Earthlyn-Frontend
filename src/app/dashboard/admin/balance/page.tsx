@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 interface UserBalance { id: string; name: string; email: string; role: string; balance?: number; }
 
 export default function BalancePage() {
-  const { user } = useAuthStore();
+  const { user, isHydrated } = useAuthStore();
   const router = useRouter();
   const [users, setUsers] = useState<UserBalance[]>([]);
   const [amount, setAmount] = useState(0);
@@ -21,7 +21,7 @@ export default function BalancePage() {
       return;
     }
     fetchUsers();
-  }, [user]);
+  }, [user, isHydrated]);
 
   const fetchUsers = async () => {
     try {
@@ -50,6 +50,11 @@ export default function BalancePage() {
 
   if (loading) return <div className="p-8">Loading...</div>;
 
+  
+  if (!isHydrated) {
+    return <div className="max-w-7xl mx-auto px-4 py-10">Loading...</div>;
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <h1 className="text-4xl">Balance Management</h1>
@@ -72,4 +77,6 @@ export default function BalancePage() {
     </div>
   );
 }
+
+
 

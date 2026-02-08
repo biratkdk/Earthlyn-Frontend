@@ -18,7 +18,7 @@ interface Ticket {
 }
 
 export default function CustomerServiceDashboard() {
-  const { user } = useAuthStore();
+  const { user, isHydrated } = useAuthStore();
   const router = useRouter();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ export default function CustomerServiceDashboard() {
       return;
     }
     loadTickets();
-  }, [user]);
+  }, [user, isHydrated]);
 
   const loadTickets = async () => {
     try {
@@ -62,6 +62,11 @@ export default function CustomerServiceDashboard() {
   };
 
   if (loading) return <div className="p-8">Loading...</div>;
+
+  
+  if (!isHydrated) {
+    return <div className="max-w-7xl mx-auto px-4 py-10">Loading...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -160,3 +165,7 @@ export default function CustomerServiceDashboard() {
     </div>
   );
 }
+
+
+
+

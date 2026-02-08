@@ -15,7 +15,7 @@ interface Product {
 }
 
 export default function ProductApprovalPage() {
-  const { user } = useAuthStore();
+  const { user, isHydrated } = useAuthStore();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ export default function ProductApprovalPage() {
       return;
     }
     fetchProducts();
-  }, [user]);
+  }, [user, isHydrated]);
 
   const fetchProducts = async () => {
     try {
@@ -52,6 +52,11 @@ export default function ProductApprovalPage() {
 
   if (loading) return <div className="p-8">Loading products...</div>;
   if (error) return <div className="p-8 text-red-600">{error}</div>;
+
+  
+  if (!isHydrated) {
+    return <div className="max-w-7xl mx-auto px-4 py-10">Loading...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -94,4 +99,6 @@ export default function ProductApprovalPage() {
     </div>
   );
 }
+
+
 

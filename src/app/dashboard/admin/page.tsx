@@ -14,7 +14,7 @@ interface Stats {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isHydrated } = useAuthStore();
   const [stats, setStats] = useState<Stats>({ totalUsers: 0, totalOrders: 0, totalSellers: 0, totalTransactions: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +24,7 @@ export default function AdminDashboard() {
       return;
     }
     fetchStats();
-  }, [user]);
+  }, [user, isHydrated]);
 
   const fetchStats = async () => {
     try {
@@ -36,6 +36,11 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
+
+  
+  if (!isHydrated) {
+    return <div className="max-w-7xl mx-auto px-4 py-10">Loading...</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -61,4 +66,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+
 

@@ -18,7 +18,7 @@ interface Product {
 
 export default function SellerDashboard() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isHydrated } = useAuthStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -38,7 +38,7 @@ export default function SellerDashboard() {
       return;
     }
     resolveSeller();
-  }, [user]);
+  }, [user, isHydrated]);
 
   const resolveSeller = async () => {
     try {
@@ -77,6 +77,11 @@ export default function SellerDashboard() {
     setShowForm(false);
     fetchProducts(sellerId || undefined);
   };
+
+  
+  if (!isHydrated) {
+    return <div className="max-w-7xl mx-auto px-4 py-10">Loading...</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -176,4 +181,8 @@ export default function SellerDashboard() {
     </div>
   );
 }
+
+
+
+
 

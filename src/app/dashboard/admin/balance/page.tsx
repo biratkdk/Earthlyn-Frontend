@@ -16,6 +16,8 @@ export default function BalancePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isHydrated) return;
+    
     if (!user) {
       router.push("/login");
       return;
@@ -77,6 +79,7 @@ export default function BalancePage() {
     </div>
   );
 }
+
 
 
 

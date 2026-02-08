@@ -22,6 +22,8 @@ export default function ProductApprovalPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!isHydrated) return;
+    
     if (!user) {
       router.push("/login");
       return;
@@ -99,6 +101,7 @@ export default function ProductApprovalPage() {
     </div>
   );
 }
+
 
 
 

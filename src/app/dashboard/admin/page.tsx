@@ -19,6 +19,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isHydrated) return;
+    
     if (!user) {
       router.push("/login");
       return;
@@ -66,6 +68,7 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
 
 

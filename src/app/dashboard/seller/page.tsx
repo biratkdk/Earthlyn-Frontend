@@ -33,6 +33,8 @@ export default function SellerDashboard() {
   });
 
   useEffect(() => {
+    if (!isHydrated) return;
+    
     if (!user) {
       router.push("/login");
       return;
@@ -181,6 +183,7 @@ export default function SellerDashboard() {
     </div>
   );
 }
+
 
 
 

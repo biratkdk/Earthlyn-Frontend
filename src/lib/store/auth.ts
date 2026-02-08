@@ -101,3 +101,4 @@ export const setAuthToken = (token: string) => {
 export const clearAuthToken = () => {
   useAuthStore.setState({ user: null, token: null, isHydrated: false });
 };
+

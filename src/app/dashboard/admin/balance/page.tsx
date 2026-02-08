@@ -16,7 +16,7 @@ export default function BalancePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || user.role !== "ADMIN") {
+    if (!user) {
       router.push("/login");
       return;
     }
@@ -72,3 +72,4 @@ export default function BalancePage() {
     </div>
   );
 }
+

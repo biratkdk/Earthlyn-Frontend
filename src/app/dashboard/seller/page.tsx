@@ -33,7 +33,7 @@ export default function SellerDashboard() {
   });
 
   useEffect(() => {
-    if (!user || user.role !== "SELLER") {
+    if (!user) {
       router.push("/login");
       return;
     }
@@ -176,3 +176,4 @@ export default function SellerDashboard() {
     </div>
   );
 }
+

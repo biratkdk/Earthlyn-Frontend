@@ -15,7 +15,7 @@ export default function AnalyticsPage() {
   const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user || user.role !== "ADMIN") {
+    if (!user) {
       router.push("/login");
       return;
     }
@@ -102,3 +102,4 @@ export default function AnalyticsPage() {
     </div>
   );
 }
+

@@ -11,7 +11,7 @@ export default function ModerationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || (user.role !== "ADMIN" && user.role !== "CUSTOMER_SERVICE")) {
+    if (!user || !["ADMIN", "CUSTOMER_SERVICE"].includes(user?.role)) {
       router.push("/login");
       return;
     }
@@ -74,3 +74,4 @@ export default function ModerationPage() {
     </div>
   );
 }
+

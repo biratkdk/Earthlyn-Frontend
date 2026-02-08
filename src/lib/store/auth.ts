@@ -39,17 +39,38 @@ export const useAuthStore = create<AuthStore>()(persist(
     login: async (email, password) => {
       set({ isLoading: true });
       try {
+        console.log("[AUTH] Starting login for:", email);
         const response = await fetch(`${BACKEND_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
         const data = await response.json();
+        console.log("[AUTH] Login response:", data);
+        console.log("[AUTH] Response status:", response.ok);
+        
         if (response.ok) {
+          console.log("[AUTH] Setting token:", data.accessToken ? "EXISTS" : "MISSING");
+          console.log("[AUTH] Token preview:", data.accessToken ? data.accessToken.substring(0, 20) : "null");
+          
           set({ user: data.user, token: data.accessToken, isHydrated: true });
+          
+          setTimeout(() => {
+            const stored = localStorage.getItem("auth-storage");
+            console.log("[AUTH] After set - localStorage check:");
+            console.log("[AUTH] Stored data exists:", !!stored);
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              console.log("[AUTH] Stored token exists:", !!parsed.state?.token);
+              console.log("[AUTH] Stored token preview:", parsed.state?.token?.substring(0, 20));
+            }
+          }, 100);
         } else {
           throw new Error(data.message || "Login failed");
         }
+      } catch (err: any) {
+        console.error("[AUTH] Login error:", err.message);
+        throw err;
       } finally {
         set({ isLoading: false });
       }
@@ -80,7 +101,9 @@ export const useAuthStore = create<AuthStore>()(persist(
   {
     name: "auth-storage",
     onRehydrateStorage: () => (state) => {
+      console.log("[AUTH] Rehydrating - state exists:", !!state);
       if (state) {
+        console.log("[AUTH] Token restored from storage:", !!state.token);
         state.isHydrated = true;
       }
     },

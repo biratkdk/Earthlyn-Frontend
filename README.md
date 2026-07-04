@@ -48,41 +48,53 @@ Built as a **production monorepo** with strict separation between the Next.js fr
 ## Features
 
 ### Buyer
-- Product discovery with category, eco score, price, and sort filters
-- Cart, Stripe-powered checkout, and order tracking with real-time WebSocket updates
+
+- Product discovery with category, eco score, price, and sort filters — with real-time search autocomplete
+- Wishlist: heart-toggle any product, dedicated `/wishlist` page with add-to-cart
+- Cart, Stripe-powered checkout with optional **carbon offset (+$1)**, and order tracking with real-time WebSocket updates
 - Eco points earned on delivery, rewards dashboard, and referral program
+- **Eco impact dashboard**: lifetime CO₂ saved, plastic bottles avoided, trees equivalent, carbon-offset order count
 - Monthly eco subscription boxes (Seed, Bloom, Evergreen tiers)
 - AI-driven product recommendations, seller messaging, and review system
 - Dispute filing, customer service tickets, and notification centre
 - Privacy centre: consent management, GDPR data export, and account deletion
+- **Leaf AI chatbot**: on-site sustainability assistant powered by Claude (Haiku)
 
 ### Seller
+
 - Product listings with image upload, inline editing, and admin approval workflow
 - Processing fee preview on creation, live delivery management dashboard
 - Earnings tracker with date-range filtering and profit summary
-- Tiered profit system: **Seed → Sprout → Growth → Bloom → Evergreen → Earth Guardian**
+- Tiered profit system: **Seedling → Sprout → Bloom → Evergreen → Earth Guardian**
 - Auto tier upgrade based on cumulative sales milestones
 - KYC document upload with admin review workflow
 - Seller onboarding checklist and buyer messaging
+- **Public storefront** at `/sellers/[id]` — tier badge, verified status, star rating, full product grid, no login required
 
 ### Admin
+
 - Dashboard with revenue, orders, users, and eco-impact KPIs
 - Product approval/rejection queue and moderation tooling
 - Seller KYC review (approve / reject with reason)
 - Tier management with manual override capability
 - Dispute management with status tracking and resolution notes
 - Refund operations against Stripe payment intents with full audit trail
-- Analytics: revenue, eco impact, retention, referrals, subscriptions, top sellers, categories
+- Analytics: revenue, eco impact, retention, referrals, subscriptions, **top sellers**, categories
 - Balance management, user lookup, and immutable admin audit log
 - Growth tools: marketing campaigns, subscription plan management, referral oversight
 
 ### Platform
+
 - Cookie-based session auth with HTTP-only JWT, CSRF double-submit protection, and RBAC
 - AES-256 encrypted real-time messaging via Socket.IO
 - Email verification, password reset, and SendGrid integration
 - BullMQ background job queue (Upstash Redis in production, inline fallback for local dev)
 - S3/R2-compatible file storage with local filesystem fallback
 - Production-hardened env validation — rejects weak secrets, wildcard CORS, placeholder values at startup
+- **Rate limiting** on auth routes via `@nestjs/throttler` (5 req/min login, 3 req/min register)
+- **Dynamic demand pricing**: view-count + recent-order demand scoring with surge multiplier up to 1.25×
+- **Blockchain-style eco certificates**: SHA-256 `verificationHash` on every eco impact, publicly verifiable at `/eco-verify/[hash]`
+- **3D product viewer + AR**: canvas-based 3D renderer with drag-to-rotate; AR mode overlays the product on a live camera feed
 
 ---
 
@@ -194,6 +206,7 @@ Starts PostgreSQL, Redis, Prisma migrations, the NestJS API, and Next.js in one 
 | `NEXT_PUBLIC_BACKEND_URL` | Yes | Backend API base URL |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | Stripe publishable key |
 | `NEXT_PUBLIC_PROCESSING_FEE_RATE` | No | Default `0.05` (5%) |
+| `ANTHROPIC_API_KEY` | Yes | Powers the Leaf AI chatbot |
 
 ### Backend — `apps/backend/.env`
 
@@ -280,11 +293,16 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
 apps/frontend/src/
 ├── app/                   # Next.js App Router pages
 │   ├── dashboard/         # Role dashboards (buyer · seller · admin · cs)
-│   ├── products/          # Storefront and product detail
-│   ├── orders/            # Order list and live order tracking
+│   ├── products/          # Storefront, product detail with 3D/AR viewer + demand badge
+│   ├── orders/            # Order list with eco points, reorder, certificate links
+│   ├── wishlist/          # Saved products with add-to-cart
+│   ├── sellers/[id]/      # Public seller storefront (no auth required)
+│   ├── eco-verify/[hash]/ # Blockchain-style eco impact certificate
 │   ├── messages/          # Real-time encrypted messaging
-│   └── ...
+│   └── api/chat/          # Leaf AI chatbot route (Claude Haiku)
 ├── components/
+│   ��── ARViewer.tsx        # 3D canvas renderer + AR camera overlay
+│   ├── ChatWidget.tsx      # Floating AI chat panel
 │   ├── auth/              # AuthBootstrap (session hydration)
 │   ├── layout/            # Navbar
 │   ├── privacy/           # CookieConsent
@@ -297,13 +315,16 @@ apps/frontend/src/
 └── proxy.ts               # Edge middleware — cookie-based route protection
 
 apps/backend/src/
-├── auth/                  # Login, register, JWT, CSRF, cookie management
-├── product/               # Listings, reviews, approval, recommendations
+├── auth/                  # Login, register, JWT, CSRF, cookie management (rate-limited)
+├── product/               # Listings, reviews, approval, autocomplete suggest, demand scoring
 ├── order/                 # Order lifecycle, cancellation
-├── payment/               # Stripe PaymentIntents, webhooks, refunds
+├── payment/               # Stripe PaymentIntents, webhooks, carbon offset, eco certificates
 ├── delivery-management/   # Fulfillment steps, eco points, tier upgrades
-├── seller/                # Seller profile, earnings, profit summary
+├── seller/                # Seller profile, earnings, public storefront endpoint
 ├── seller-kyc/            # Document upload and admin KYC review
+├── wishlist/              # Wishlist CRUD (toggle, status, list)
+├── eco-verify/            # Public SHA-256 hash verification endpoint
+├── buyer/                 # Eco summary (CO₂, plastic, trees, carbon offset stats)
 ├── messaging/             # AES-encrypted conversations
 ├── disputes/              # Buyer/seller dispute workflow
 ├── analytics/             # Admin analytics endpoints

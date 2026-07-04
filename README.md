@@ -11,6 +11,7 @@ Buyers · Sellers · Admins · Customer Service — one cohesive platform, live 
 
 [![Live Demo](https://img.shields.io/badge/Frontend-Live%20on%20Vercel-black?style=flat-square&logo=vercel)](https://earthlyn-biratkdks-projects.vercel.app)
 [![API](https://img.shields.io/badge/Backend-Live%20on%20Render-46e3b7?style=flat-square&logo=render&logoColor=black)](https://earthlyn-backend.onrender.com/health)
+[![CI](https://github.com/biratkdk/Earthlyn-Frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/biratkdk/Earthlyn-Frontend/actions/workflows/ci.yml)
 
 <br />
 
@@ -238,7 +239,7 @@ npm run build:backend      # Production build
 npm run lint:frontend      # ESLint — frontend
 npm run lint:backend       # ESLint — backend
 
-npm run test:backend       # Jest unit tests
+npm run test:backend       # 75 unit tests (Node built-in test runner)
 
 npm run verify:ci          # Full CI gate: lint + test + build + audit
 ```

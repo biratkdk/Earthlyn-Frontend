@@ -299,7 +299,7 @@ export function ARViewer({ imageUrl, productName, onClose }: ARViewerProps) {
               onMouseLeave={onMouseUp}
             />
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-xs text-center pointer-events-none">
-              Drag to rotate · Click "View in Room" for AR
+              Drag to rotate · Click &quot;View in Room&quot; for AR
             </div>
           </>
         )}

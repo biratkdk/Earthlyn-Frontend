@@ -442,7 +442,7 @@ export default function Checkout() {
               />
               <div>
                 <p className="text-sm font-semibold text-emerald-800">🌱 Carbon Offset +$1.00</p>
-                <p className="text-xs text-emerald-600 mt-0.5">Plant a tree and offset your order's carbon footprint.</p>
+                <p className="text-xs text-emerald-600 mt-0.5">Plant a tree and offset your order&apos;s carbon footprint.</p>
               </div>
             </label>
             {carbonOffset && (

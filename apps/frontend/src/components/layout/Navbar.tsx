@@ -78,7 +78,11 @@ export function Navbar() {
   const [notifCount, setNotifCount] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setMobileOpen(false); setUserMenuOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (mobileOpen) setMobileOpen(false);
+    if (userMenuOpen) setUserMenuOpen(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

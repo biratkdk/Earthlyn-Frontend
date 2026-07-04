@@ -66,11 +66,13 @@ export default function SellerStorefrontPage() {
 
   useEffect(() => {
     if (!id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     apiClient.get<SellerStorefront>(`/sellers/public/${id}`)
       .then(({ data }) => setSeller(data))
       .catch((err) => setError(getErrorMessage(err, "Failed to load seller.")))
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleAddToCart = (product: SellerStorefront["products"][number]) => {

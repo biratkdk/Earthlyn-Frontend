@@ -43,7 +43,7 @@ function buildCspHeader(nonce: string) {
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://js.stripe.com${isDev ? " 'unsafe-eval'" : ""};
     style-src 'self' 'unsafe-inline';
-    img-src 'self' ${backendUrl} blob: data:;
+    img-src 'self' ${backendUrl} https://images.unsplash.com https://plus.unsplash.com blob: data:;
     font-src 'self' data:;
     connect-src 'self' ${backendUrl} https://api.stripe.com https://*.stripe.com;
     frame-src https://js.stripe.com https://hooks.stripe.com;
@@ -72,31 +72,9 @@ export function proxy(request: NextRequest) {
     return response;
   };
 
-  const isAuthenticated = Boolean(request.cookies.get("earthlyn-session"));
-  const role = request.cookies.get("earthlyn-session-role")?.value;
-
-  const requiresAuth = authenticatedRoutes.some((route) =>
-    startsWithRoute(pathname, route),
-  );
-
-  if (requiresAuth && !isAuthenticated) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
-    const response = NextResponse.redirect(loginUrl);
-    response.headers.set("Content-Security-Policy", cspHeader);
-    return response;
-  }
-
-  const routeRule = roleRoutes.find((rule) =>
-    startsWithRoute(pathname, rule.prefix),
-  );
-
-  if (routeRule && (!role || !routeRule.roles.includes(role))) {
-    const response = NextResponse.redirect(new URL("/dashboard", request.url));
-    response.headers.set("Content-Security-Policy", cspHeader);
-    return response;
-  }
-
+  // Auth cookies are scoped to the backend domain (onrender.com) and are
+  // not readable here at the Vercel edge. Client-side guards in
+  // AuthBootstrap and per-page hooks handle auth redirects instead.
   return next();
 }
 

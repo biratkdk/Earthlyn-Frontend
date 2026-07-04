@@ -207,7 +207,7 @@ async function main() {
       processingFee: 0.63,
       stock: 180,
       ecoScore: 97,
-      imageUrl: "https://images.unsplash.com/photo-1631390093966-d8bd6f7e8ad1?w=600&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1585651923079-c1b5e4437b7b?w=600&q=80",
     },
     {
       sellerId: seller.id,
@@ -243,7 +243,7 @@ async function main() {
       processingFee: 1.8,
       stock: 62,
       ecoScore: 93,
-      imageUrl: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=600&q=80",
     },
     {
       sellerId: seller2.id,
@@ -291,7 +291,7 @@ async function main() {
       processingFee: 0.55,
       stock: 300,
       ecoScore: 98,
-      imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1591840054100-eeb9c5f00bca?w=600&q=80",
     },
     {
       sellerId: seller2.id,
@@ -315,7 +315,7 @@ async function main() {
       processingFee: 0.7,
       stock: 160,
       ecoScore: 99,
-      imageUrl: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&q=80",
     },
     {
       sellerId: seller2.id,
@@ -327,7 +327,7 @@ async function main() {
       processingFee: 0.43,
       stock: 250,
       ecoScore: 100,
-      imageUrl: "https://images.unsplash.com/photo-1631390093966-d8bd6f7e8ad1?w=600&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80",
     },
     {
       sellerId: seller.id,

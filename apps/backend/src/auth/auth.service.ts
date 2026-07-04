@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   UnauthorizedException,
   ConflictException,
   BadRequestException,
@@ -27,6 +28,7 @@ interface EmailVerificationTokenPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly VALID_ROLES = [
     "ADMIN",
     "SELLER",
@@ -98,10 +100,14 @@ export class AuthService {
       },
     );
 
-    await this.emailService.sendEmailVerification(
-      user.email,
-      this.buildEmailVerificationUrl(verification.rawToken),
-    );
+    try {
+      await this.emailService.sendEmailVerification(
+        user.email,
+        this.buildEmailVerificationUrl(verification.rawToken),
+      );
+    } catch (err) {
+      this.logger.warn(`Verification email failed for ${user.email}: ${(err as Error).message}`);
+    }
 
     const requiresEmailVerification = this.requiresEmailVerification();
     const accessToken = requiresEmailVerification
@@ -185,10 +191,14 @@ export class AuthService {
       return this.createEmailVerificationToken(tx, user.id);
     });
 
-    await this.emailService.sendEmailVerification(
-      user.email,
-      this.buildEmailVerificationUrl(verification.rawToken),
-    );
+    try {
+      await this.emailService.sendEmailVerification(
+        user.email,
+        this.buildEmailVerificationUrl(verification.rawToken),
+      );
+    } catch (err) {
+      this.logger.warn(`Resend verification email failed for ${user.email}: ${(err as Error).message}`);
+    }
 
     return { success: true };
   }
@@ -249,7 +259,11 @@ export class AuthService {
     );
     const resetUrl = `${this.getFrontendUrl()}/reset-password?token=${encodeURIComponent(token)}`;
 
-    await this.emailService.sendPasswordReset(user.email, resetUrl);
+    try {
+      await this.emailService.sendPasswordReset(user.email, resetUrl);
+    } catch (err) {
+      this.logger.warn(`Password reset email failed for ${user.email}: ${(err as Error).message}`);
+    }
 
     return { success: true };
   }

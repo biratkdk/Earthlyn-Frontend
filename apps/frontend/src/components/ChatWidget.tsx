@@ -16,13 +16,13 @@ export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
-  const [streaming, setStreaming] = useState(false);
+  const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streaming]);
+  }, [messages, loading]);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 80);
@@ -30,15 +30,13 @@ export function ChatWidget() {
 
   const send = async () => {
     const text = input.trim();
-    if (!text || streaming) return;
+    if (!text || loading) return;
 
     const next: Message[] = [...messages, { role: "user", content: text }];
-    setMessages(next);
+    const withThinking: Message[] = [...next, { role: "assistant", content: "" }];
+    setMessages(withThinking);
     setInput("");
-    setStreaming(true);
-
-    const placeholder: Message = { role: "assistant", content: "" };
-    setMessages([...next, placeholder]);
+    setLoading(true);
 
     try {
       const res = await fetch("/api/chat", {
@@ -47,25 +45,21 @@ export function ChatWidget() {
         body: JSON.stringify({ messages: next }),
       });
 
-      if (!res.ok || !res.body) throw new Error();
+      const data = (await res.json()) as { text?: string; error?: string };
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        accumulated += decoder.decode(value, { stream: true });
-        setMessages([...next, { role: "assistant", content: accumulated }]);
+      if (!res.ok || data.error) {
+        throw new Error(data.error ?? "Unknown error");
       }
-    } catch {
+
+      setMessages([...next, { role: "assistant", content: data.text ?? "" }]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
       setMessages([
         ...next,
-        { role: "assistant", content: "Sorry, I couldn't reach the server. Please try again." },
+        { role: "assistant", content: `Sorry — ${msg} Please try again.` },
       ]);
     } finally {
-      setStreaming(false);
+      setLoading(false);
     }
   };
 
@@ -118,7 +112,7 @@ export function ChatWidget() {
                   }`}
                 >
                   {msg.content}
-                  {msg.role === "assistant" && streaming && i === messages.length - 1 && msg.content === "" && (
+                  {msg.role === "assistant" && loading && i === messages.length - 1 && msg.content === "" && (
                     <span className="inline-flex gap-1 py-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -139,7 +133,7 @@ export function ChatWidget() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
               placeholder="Ask me anything…"
-              disabled={streaming}
+              disabled={loading}
               className="flex-1 text-sm rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 disabled:opacity-50 bg-white"
             />
             <button

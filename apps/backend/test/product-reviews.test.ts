@@ -18,6 +18,7 @@ function createProductReviewPrisma(hasDeliveredOrder = true) {
           approvalStatus: "APPROVED",
         };
       },
+      async update() { return {}; },
     },
     order: {
       async findFirst() {

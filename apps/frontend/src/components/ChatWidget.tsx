@@ -138,7 +138,7 @@ export function ChatWidget() {
             />
             <button
               onClick={() => void send()}
-              disabled={!input.trim() || streaming}
+              disabled={!input.trim() || loading}
               className="w-9 h-9 rounded-xl bg-[var(--accent)] text-white flex items-center justify-center hover:bg-[var(--accent)]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

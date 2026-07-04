@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCartStore } from "@/lib/store/cart";
 import { useToast } from "@/components/ui/ToastProvider";
 import Image from "next/image";
@@ -33,6 +34,7 @@ function isUnoptimizedImage(src: string) {
 }
 
 export default function Products() {
+  const searchParams = useSearchParams();
   const { addItem } = useCartStore();
   const { notify } = useToast();
   const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -42,7 +44,7 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useState(() => searchParams.get("category") ?? "all");
   const [minEcoScore, setMinEcoScore] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -83,6 +85,12 @@ export default function Products() {
     minPrice,
     sortBy,
   ]);
+
+  useEffect(() => {
+    const urlCat = searchParams.get("category") ?? "all";
+    setCategory(urlCat);
+    setCurrentPage(1);
+  }, [searchParams]);
 
   useEffect(() => {
     void fetchProducts();

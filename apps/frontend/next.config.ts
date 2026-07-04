@@ -36,6 +36,8 @@ const nextConfig: NextConfig = {
         port: backendImageUrl.port,
         pathname: "/**",
       },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "plus.unsplash.com" },
     ],
   },
   async headers() {

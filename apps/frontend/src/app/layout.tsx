@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { AuthBootstrap } from "@/components/auth/AuthBootstrap";
 import { Navbar } from "@/components/layout/Navbar";
 import { CookieConsent } from "@/components/privacy/CookieConsent";
+import { ChatWidget } from "@/components/ChatWidget";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import "@fontsource/space-grotesk/400.css";
 import "@fontsource/space-grotesk/600.css";
@@ -35,6 +36,7 @@ export default async function RootLayout({
           <Navbar />
           <main>{children}</main>
           <CookieConsent />
+          <ChatWidget />
         </ToastProvider>
       </body>
     </html>

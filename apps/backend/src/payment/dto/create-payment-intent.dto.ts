@@ -1,6 +1,7 @@
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsInt,
   IsNotEmpty,
@@ -66,4 +67,8 @@ export class CreatePaymentIntentDto {
   @IsString()
   @IsOptional()
   orderId?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  carbonOffset?: boolean;
 }

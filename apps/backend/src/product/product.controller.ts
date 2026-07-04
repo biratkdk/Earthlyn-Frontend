@@ -43,6 +43,11 @@ export class ProductController {
     return this.productService.findAllPublic(query);
   }
 
+  @Get("suggest")
+  async suggest(@Query("q") q: string, @Query("limit") limit?: string) {
+    return this.productService.suggest(q, limit ? Number(limit) : 5);
+  }
+
   @Get("mine")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SELLER, UserRole.ADMIN)

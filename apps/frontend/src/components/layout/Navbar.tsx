@@ -114,6 +114,7 @@ export function Navbar() {
     ];
     const byRole: Record<string, { href: string; icon: string; label: string }[]> = {
       BUYER: [
+        { href: "/wishlist",          icon: "🤍", label: "Wishlist" },
         { href: "/rewards",           icon: "🌱", label: "Eco Rewards" },
         { href: "/referrals",         icon: "🤝", label: "Referrals" },
         { href: "/subscription",      icon: "📮", label: "Eco-Box" },

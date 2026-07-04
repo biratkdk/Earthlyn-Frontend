@@ -103,7 +103,9 @@ export interface ApiProduct {
   name: string;
   description?: string;
   price: number | string;
+  processingFee?: number | string | null;
   stock: number;
+  stockStatus?: string;
   category: string;
   ecoScore: number;
   sellerId?: string;
@@ -111,7 +113,9 @@ export interface ApiProduct {
   approvalStatus?: string;
   deliveryStatus?: string;
   createdAt?: string;
+  updatedAt?: string;
   seller?: ApiSeller;
+  wishlisted?: boolean;
 }
 
 export interface ApiProductReview {
@@ -145,6 +149,8 @@ export interface ApiOrder {
   product?: ApiProduct;
   buyer?: ApiUser;
   ecoImpacts?: ApiEcoImpact[];
+  ecoPointsAwarded?: number;
+  carbonOffset?: boolean;
 }
 
 export interface ApiReferral {

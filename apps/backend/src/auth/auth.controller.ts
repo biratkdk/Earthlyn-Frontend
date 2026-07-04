@@ -7,6 +7,7 @@
   BadRequestException,
   Res,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import { ConfigService } from "@nestjs/config";
 import type { CookieOptions, Response } from "express";
 import { AuthService } from "./auth.service";
@@ -31,6 +32,7 @@ export class AuthController {
   ) {}
 
   @Post("register")
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   async register(
     @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) response: Response,
@@ -44,6 +46,7 @@ export class AuthController {
   }
 
   @Post("login")
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,

@@ -10,6 +10,15 @@ import { getDashboardPath } from "@/lib/utils/routes";
 import { getApiErrorStatus, getErrorMessage } from "@/lib/utils/errors";
 import { LoadingState } from "@/components/ui/Skeleton";
 
+interface EcoSummary {
+  ecoPoints: number;
+  totalCo2KgSaved: number;
+  totalPlasticBottlesAvoided: number;
+  carbonOffsetOrders: number;
+  totalOrdersCompleted: number;
+  treesEquivalent: number;
+}
+
 interface Order {
   id: string;
   status: string;
@@ -23,6 +32,7 @@ export default function BuyerDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string>("");
+  const [ecoSummary, setEcoSummary] = useState<EcoSummary | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!user) return;
@@ -55,6 +65,9 @@ export default function BuyerDashboard() {
     }
 
     void fetchOrders();
+    apiClient.get<EcoSummary>("/buyers/me/eco-summary")
+      .then(({ data }) => setEcoSummary(data))
+      .catch(() => {});
   }, [user, isHydrated, router, fetchOrders]);
 
   if (!isHydrated) {
@@ -95,6 +108,42 @@ export default function BuyerDashboard() {
           <p className="text-3xl font-semibold text-[var(--accent)]">{loading ? "..." : pending}</p>
         </div>
       </div>
+
+      {/* Eco Impact Tracker */}
+      {ecoSummary && (
+        <div className="card p-6 mb-8 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-emerald-800">🌍 Your Eco Impact</h2>
+            <Link href="/rewards" className="text-sm text-emerald-600 hover:underline">View full report →</Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-700">{ecoSummary.ecoPoints}</p>
+              <p className="text-xs text-emerald-600 mt-0.5">Eco Points</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-700">{ecoSummary.totalCo2KgSaved}</p>
+              <p className="text-xs text-emerald-600 mt-0.5">kg CO₂ Saved</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-700">{ecoSummary.totalPlasticBottlesAvoided}</p>
+              <p className="text-xs text-emerald-600 mt-0.5">Bottles Avoided</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-700">{ecoSummary.treesEquivalent}</p>
+              <p className="text-xs text-emerald-600 mt-0.5">Tree Equivalent</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-700">{ecoSummary.carbonOffsetOrders}</p>
+              <p className="text-xs text-emerald-600 mt-0.5">Carbon Offset Orders</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-700">{ecoSummary.totalOrdersCompleted}</p>
+              <p className="text-xs text-emerald-600 mt-0.5">Eco Orders</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="card p-6">
         <h2 className="text-xl font-semibold mb-4">Recent Orders {loading && "..."}</h2>

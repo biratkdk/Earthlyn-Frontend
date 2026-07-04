@@ -185,6 +185,7 @@ export default function Checkout() {
   const [error, setError] = useState("");
   const [session, setSession] = useState<CheckoutSession | null>(null);
   const [checkoutCompleted, setCheckoutCompleted] = useState(false);
+  const [carbonOffset, setCarbonOffset] = useState(false);
   const paymentReady = Boolean(stripePromise) || isE2eMode;
   const [formData, setFormData] = useState({
     fullName: user?.name || "",
@@ -245,6 +246,7 @@ export default function Checkout() {
             country: formData.country.toUpperCase(),
             zipCode: formData.zipCode,
           },
+          carbonOffset,
         },
       );
 
@@ -431,9 +433,27 @@ export default function Checkout() {
               <span>Shipping</span>
               <span>Included</span>
             </div>
+            <label className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 cursor-pointer hover:bg-emerald-100 transition-colors mt-3">
+              <input
+                type="checkbox"
+                checked={carbonOffset}
+                onChange={(e) => setCarbonOffset(e.target.checked)}
+                className="mt-0.5 accent-emerald-600"
+              />
+              <div>
+                <p className="text-sm font-semibold text-emerald-800">🌱 Carbon Offset +$1.00</p>
+                <p className="text-xs text-emerald-600 mt-0.5">Plant a tree and offset your order's carbon footprint.</p>
+              </div>
+            </label>
+            {carbonOffset && (
+              <div className="flex justify-between text-emerald-700 text-sm">
+                <span>Carbon Offset</span>
+                <span>+$1.00</span>
+              </div>
+            )}
             <div className="flex justify-between border-t pt-4 text-lg font-semibold">
               <span>TOTAL</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${(total + (carbonOffset ? 1 : 0)).toFixed(2)}</span>
             </div>
           </div>
         </div>

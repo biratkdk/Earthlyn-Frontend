@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCartStore } from "@/lib/store/cart";
+import { useAuthStore } from "@/lib/store/auth";
 import { useToast } from "@/components/ui/ToastProvider";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,6 +21,14 @@ import {
   type PaginationMeta,
 } from "@/lib/api/pagination";
 
+function HeartIcon({ filled }: { filled?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  );
+}
+
 const PRODUCT_PAGE_SIZE = 9;
 const PRODUCT_SORT_OPTIONS = [
   { label: "Newest", value: "newest" },
@@ -36,6 +45,7 @@ function isUnoptimizedImage(src: string) {
 export default function Products() {
   const searchParams = useSearchParams();
   const { addItem } = useCartStore();
+  const { user } = useAuthStore();
   const { notify } = useToast();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -44,6 +54,8 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<ApiProduct[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [category, setCategory] = useState(() => searchParams.get("category") ?? "all");
   const [minEcoScore, setMinEcoScore] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -51,6 +63,9 @@ export default function Products() {
   const [sortBy, setSortBy] =
     useState<(typeof PRODUCT_SORT_OPTIONS)[number]["value"]>("newest");
   const [error, setError] = useState("");
+  const [wishlisted, setWishlisted] = useState<Set<string>>(new Set());
+  const [wishlistToggling, setWishlistToggling] = useState<Set<string>>(new Set());
+  const searchRef = useRef<HTMLDivElement>(null);
   const debouncedSearch = useDebounce(search, 300);
 
   const fetchProducts = useCallback(async () => {
@@ -103,6 +118,54 @@ export default function Products() {
       .catch(() => setCategories([]));
   }, []);
 
+  // Load wishlist state for authenticated buyers
+  useEffect(() => {
+    if (!user || user.role !== "BUYER") return;
+    apiClient.get<ApiProduct[]>("/wishlist")
+      .then(({ data }) => {
+        if (Array.isArray(data)) setWishlisted(new Set(data.map((p) => p.id)));
+      })
+      .catch(() => {});
+  }, [user]);
+
+  // Search autocomplete
+  useEffect(() => {
+    if (debouncedSearch.trim().length < 2) { setSuggestions([]); return; }
+    apiClient.get<ApiProduct[]>(`/products/suggest?q=${encodeURIComponent(debouncedSearch.trim())}`)
+      .then(({ data }) => setSuggestions(Array.isArray(data) ? data : []))
+      .catch(() => setSuggestions([]));
+  }, [debouncedSearch]);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleToggleWishlist = async (productId: string) => {
+    if (!user) { notify("Sign in to save items", "error"); return; }
+    if (wishlistToggling.has(productId)) return;
+    setWishlistToggling((prev) => new Set(prev).add(productId));
+    try {
+      const { data } = await apiClient.post<{ wishlisted: boolean }>(`/wishlist/${productId}`);
+      setWishlisted((prev) => {
+        const next = new Set(prev);
+        if (data.wishlisted) next.add(productId); else next.delete(productId);
+        return next;
+      });
+      notify(data.wishlisted ? "Saved to wishlist" : "Removed from wishlist", "success");
+    } catch {
+      notify("Failed to update wishlist", "error");
+    } finally {
+      setWishlistToggling((prev) => { const next = new Set(prev); next.delete(productId); return next; });
+    }
+  };
+
   const handleAddToCart = (product: ApiProduct) => {
     addItem({
       id: product.id,
@@ -128,20 +191,39 @@ export default function Products() {
       </div>
 
       <div className="mb-8 grid gap-3 rounded-lg border border-black/10 bg-white p-4 md:grid-cols-6">
-        <label htmlFor="product-search" className="sr-only">
-          Search products
-        </label>
-        <input
-          id="product-search"
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="rounded-xl border border-black/10 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] md:col-span-2"
-        />
+        <div ref={searchRef} className="relative md:col-span-2">
+          <label htmlFor="product-search" className="sr-only">Search products</label>
+          <input
+            id="product-search"
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); setShowSuggestions(true); }}
+            onFocus={() => search.length >= 2 && setShowSuggestions(true)}
+            className="w-full rounded-xl border border-black/10 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-black/10 rounded-xl shadow-lg overflow-hidden">
+              {suggestions.map((s) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    className="w-full text-left px-4 py-2.5 hover:bg-[var(--muted)] text-sm flex items-center gap-3"
+                    onMouseDown={() => {
+                      setSearch(s.name);
+                      setShowSuggestions(false);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span className="flex-1 font-medium">{s.name}</span>
+                    <span className="text-xs text-[var(--accent)]">{s.category}</span>
+                    <span className="text-xs text-gray-500">${Number(s.price).toFixed(2)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <label htmlFor="product-category" className="sr-only">
           Product category
         </label>
@@ -260,6 +342,14 @@ export default function Products() {
                         No image
                       </div>
                     )}
+                    <button
+                      onClick={(e) => { e.preventDefault(); void handleToggleWishlist(product.id); }}
+                      disabled={wishlistToggling.has(product.id)}
+                      className={`absolute top-2 right-2 p-2 rounded-full shadow-sm transition-all ${wishlisted.has(product.id) ? "bg-red-500 text-white" : "bg-white/90 text-gray-400 hover:text-red-500"}`}
+                      aria-label="Toggle wishlist"
+                    >
+                      <HeartIcon filled={wishlisted.has(product.id)} />
+                    </button>
                   </div>
                   <div>
                     <p className="text-xs uppercase tracking-wide text-[var(--accent)]">

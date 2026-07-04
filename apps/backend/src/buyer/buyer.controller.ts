@@ -92,6 +92,13 @@ export class BuyerController {
     return this.buyerService.getRewards(req.user.id);
   }
 
+  @Get("me/eco-summary")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.BUYER, UserRole.ADMIN)
+  async getEcoSummary(@Req() req: AuthenticatedRequest) {
+    return this.buyerService.getEcoSummary(req.user.id);
+  }
+
   @Get(":id")
   async findOne(@Param("id") id: string) {
     return this.buyerService.findOne(id);

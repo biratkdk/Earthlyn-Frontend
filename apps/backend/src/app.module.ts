@@ -30,6 +30,7 @@ import { SubscriptionsModule } from "./subscriptions/subscriptions.module";
 import { FulfillmentModule } from "./fulfillment/fulfillment.module";
 import { GrowthModule } from "./growth/growth.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { WishlistModule } from "./wishlist/wishlist.module";
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
     FulfillmentModule,
     GrowthModule,
     NotificationsModule,
+    WishlistModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

@@ -51,6 +51,7 @@ model User {
   productReviews          ProductReview[]
   marketingCampaigns      MarketingCampaign[]      @relation("MarketingCampaignCreatedBy")
   fulfillmentEvents       FulfillmentEvent[]       @relation("FulfillmentEventActor")
+  wishlists               Wishlist[]
 
   @@map("users")
 }
@@ -136,6 +137,7 @@ model Product {
   ecoImpacts EcoImpact[]
   reviews    ProductReview[]
   orderReviews Review[]
+  wishlists  Wishlist[]
 
   @@map("products")
 }
@@ -189,6 +191,8 @@ model Order {
   status             OrderStatus   @default(PENDING) @map("status")
   deliveryTrackingId String?       @map("delivery_tracking_id")
   deliveredAt        DateTime?     @map("delivered_at")
+  carbonOffset       Boolean       @default(false) @map("carbon_offset")
+  ecoPointsAwarded   Int           @default(0) @map("eco_points_awarded")
   createdAt          DateTime      @default(now()) @map("created_at")
   updatedAt          DateTime      @updatedAt @map("updated_at")
 
@@ -281,6 +285,22 @@ model EcoImpact {
   @@index([productId])
   @@index([orderId])
   @@map("eco_impacts")
+}
+
+// ============ WISHLIST ============
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("wishlists")
 }
 
 // ============ ADMIN AUDIT ============

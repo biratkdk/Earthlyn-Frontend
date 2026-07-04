@@ -34,8 +34,9 @@ export class PaymentService {
     createPaymentIntentDto: CreatePaymentIntentDto,
     userId: string,
   ) {
-    const { items, orderId, shippingAddress } = createPaymentIntentDto;
-    const amount = await this.calculateServerAmount(items);
+    const { items, orderId, shippingAddress, carbonOffset } = createPaymentIntentDto;
+    const baseAmount = await this.calculateServerAmount(items);
+    const amount = baseAmount + (carbonOffset ? 1 : 0);
     const cartItems = JSON.stringify(
       items.map(({ productId, quantity }) => ({ productId, quantity })),
     );
@@ -52,6 +53,7 @@ export class PaymentService {
           productIds: items.map((item) => item.productId).join(","),
           cartItems,
           orderId: orderId || "",
+          carbonOffset: carbonOffset ? "true" : "false",
         },
         receipt_email: shippingAddress.email,
         shipping: {
@@ -398,15 +400,72 @@ export class PaymentService {
           throw new BadRequestException("Insufficient stock");
         }
 
+        const fullProduct = await tx.product.findUnique({
+          where: { id: item.productId },
+          select: { id: true, price: true, approvalStatus: true, ecoScore: true, name: true, category: true },
+        });
+        const carbonOffset = paymentIntent.metadata?.carbonOffset === "true";
+        const ecoPointsRate = this.configService.get<number>("commerce.ecoPointsPerDollar") ?? 1;
+        const orderAmount = Number(fullProduct?.price ?? product.price) * item.quantity;
+        const ecoPointsAwarded = Math.round(orderAmount * ecoPointsRate * (1 + (Number(fullProduct?.ecoScore ?? 0) / 100)));
+
         const order = await tx.order.create({
           data: {
             buyerId: userId,
             productId: item.productId,
             quantity: item.quantity,
-            totalAmount: (Number(product.price) * item.quantity).toFixed(2),
+            totalAmount: orderAmount.toFixed(2),
             paymentIntentId: paymentIntent.id,
             paymentStatus: PaymentStatus.SUCCEEDED,
             status: OrderStatus.CONFIRMED,
+            carbonOffset,
+            ecoPointsAwarded,
+          },
+        });
+
+        // Award eco points to user + buyer
+        await tx.user.update({
+          where: { id: userId },
+          data: { ecoPoints: { increment: ecoPointsAwarded } },
+        });
+        await tx.buyer.updateMany({
+          where: { userId },
+          data: {
+            rewardPoints: { increment: ecoPointsAwarded },
+            totalSpent: { increment: orderAmount },
+          },
+        });
+
+        // Create eco impact record
+        const co2Saved = ((Number(fullProduct?.ecoScore ?? 50) / 100) * orderAmount * 0.3).toFixed(2);
+        const plasticBottles = Math.round(orderAmount / 3);
+        await tx.ecoImpact.create({
+          data: {
+            userId,
+            productId: item.productId,
+            orderId: order.id,
+            pointsEarned: ecoPointsAwarded,
+            impact: JSON.stringify({
+              co2SavedKg: Number(co2Saved),
+              plasticBottlesAvoided: plasticBottles,
+              category: fullProduct?.category ?? "General",
+              ecoScore: fullProduct?.ecoScore ?? 0,
+            }),
+          },
+        });
+
+        // Notify buyer
+        await tx.notification.create({
+          data: {
+            userId,
+            type: "ORDER_CONFIRMED",
+            message: `Your order for "${fullProduct?.name ?? "item"}" is confirmed! You earned ${ecoPointsAwarded} eco points.`,
+            metadata: {
+              orderId: order.id,
+              productId: item.productId,
+              ecoPointsAwarded,
+              carbonOffset,
+            },
           },
         });
 
@@ -420,6 +479,8 @@ export class PaymentService {
               paymentIntentId: paymentIntent.id,
               productId: order.productId,
               quantity: order.quantity,
+              ecoPointsAwarded,
+              carbonOffset,
             },
           },
         });

@@ -44,6 +44,51 @@ export class SellerService {
     return this.prismaService.seller.findUnique({ where: { id } });
   }
 
+  async getPublicStorefront(id: string) {
+    const seller = await this.prismaService.seller.findUnique({
+      where: { id },
+      include: {
+        user: { select: { id: true, name: true, createdAt: true } },
+        products: {
+          where: { approvalStatus: "APPROVED" },
+          orderBy: { ecoScore: "desc" },
+          select: {
+            id: true, name: true, description: true, price: true,
+            imageUrl: true, ecoScore: true, category: true, stock: true,
+          },
+        },
+      },
+    });
+    if (!seller) throw new Error("Seller not found");
+
+    const orders = await this.prismaService.order.findMany({
+      where: { product: { sellerId: id }, paymentStatus: "SUCCEEDED" },
+      select: { totalAmount: true },
+    });
+    const totalSales = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
+
+    const reviews = await this.prismaService.productReview.findMany({
+      where: { product: { sellerId: id } },
+      select: { rating: true },
+    });
+    const avgRating = reviews.length
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : null;
+
+    return {
+      id: seller.id,
+      name: seller.user.name,
+      tier: seller.tier,
+      isVerified: seller.isVerified,
+      memberSince: seller.user.createdAt,
+      totalSales: Number(totalSales.toFixed(2)),
+      totalOrders: orders.length,
+      avgRating: avgRating ? Number(avgRating.toFixed(1)) : null,
+      reviewCount: reviews.length,
+      products: seller.products,
+    };
+  }
+
   async findByUserId(userId: string) {
     return this.prismaService.seller.findUnique({
       where: { userId },

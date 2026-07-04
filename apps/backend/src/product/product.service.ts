@@ -211,6 +211,23 @@ export class ProductService {
     );
   }
 
+  async suggest(q: string, limit = 5) {
+    if (!q || q.trim().length < 2) return [];
+    const results = await this.prisma.product.findMany({
+      where: {
+        approvalStatus: "APPROVED",
+        OR: [
+          { name: { contains: q.trim(), mode: "insensitive" } },
+          { category: { contains: q.trim(), mode: "insensitive" } },
+        ],
+      },
+      select: { id: true, name: true, category: true, price: true, imageUrl: true },
+      orderBy: { ecoScore: "desc" },
+      take: limit,
+    });
+    return results;
+  }
+
   async findPublicCategories() {
     const categories = await this.prisma.product.groupBy({
       by: ["category"],

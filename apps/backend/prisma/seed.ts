@@ -207,7 +207,7 @@ async function main() {
       processingFee: 0.63,
       stock: 180,
       ecoScore: 97,
-      imageUrl: "https://images.unsplash.com/photo-1585651923079-c1b5e4437b7b?w=600&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600&q=80",
     },
     {
       sellerId: seller.id,
@@ -291,7 +291,7 @@ async function main() {
       processingFee: 0.55,
       stock: 300,
       ecoScore: 98,
-      imageUrl: "https://images.unsplash.com/photo-1591840054100-eeb9c5f00bca?w=600&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1604187351574-c75ca79f5807?w=600&q=80",
     },
     {
       sellerId: seller2.id,

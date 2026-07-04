@@ -97,6 +97,13 @@ export class ProductController {
     return this.productService.createReview(id, req.user.id, dto);
   }
 
+  @Get(":id/demand")
+  async getDemand(@Param("id") id: string) {
+    const info = await this.productService.getDemandInfo(id);
+    if (!info) throw new NotFoundException("Product not found");
+    return info;
+  }
+
   @Get(":id")
   async findOne(@Param("id") id: string) {
     const product = await this.productService.findPublicById(id);

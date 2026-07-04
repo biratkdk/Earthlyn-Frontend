@@ -5,6 +5,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from "@nestjs/common";
+import { createHash } from "crypto";
 import { ConfigService } from "@nestjs/config";
 import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import Stripe from "stripe";
@@ -439,18 +440,24 @@ export class PaymentService {
         // Create eco impact record
         const co2Saved = ((Number(fullProduct?.ecoScore ?? 50) / 100) * orderAmount * 0.3).toFixed(2);
         const plasticBottles = Math.round(orderAmount / 3);
+        const impactPayload = {
+          co2SavedKg: Number(co2Saved),
+          plasticBottlesAvoided: plasticBottles,
+          category: fullProduct?.category ?? "General",
+          ecoScore: fullProduct?.ecoScore ?? 0,
+        };
+        const verificationHash = createHash("sha256")
+          .update(`${userId}:${order.id}:${co2Saved}:${plasticBottles}:${order.createdAt?.toISOString() ?? new Date().toISOString()}`)
+          .digest("hex");
+
         await tx.ecoImpact.create({
           data: {
             userId,
             productId: item.productId,
             orderId: order.id,
             pointsEarned: ecoPointsAwarded,
-            impact: JSON.stringify({
-              co2SavedKg: Number(co2Saved),
-              plasticBottlesAvoided: plasticBottles,
-              category: fullProduct?.category ?? "General",
-              ecoScore: fullProduct?.ecoScore ?? 0,
-            }),
+            impact: JSON.stringify(impactPayload),
+            verificationHash,
           },
         });
 

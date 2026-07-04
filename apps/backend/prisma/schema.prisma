@@ -129,6 +129,7 @@ model Product {
   imageUrl       String?        @map("image_url")
   approvalStatus ApprovalStatus @default(PENDING) @map("approval_status")
   approvedAt     DateTime?      @map("approved_at")
+  viewCount      Int            @default(0) @map("view_count")
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
 
@@ -273,9 +274,10 @@ model EcoImpact {
   userId       String   @map("user_id")
   productId    String   @map("product_id")
   orderId      String   @map("order_id")
-  pointsEarned Int      @map("points_earned")
-  impact       String   @db.Text
-  createdAt    DateTime @default(now()) @map("created_at")
+  pointsEarned      Int      @map("points_earned")
+  impact            String   @db.Text
+  verificationHash  String?  @unique @map("verification_hash")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)

@@ -130,6 +130,7 @@ export interface ApiEcoImpact {
   id: string;
   impact: string;
   pointsEarned: number;
+  verificationHash?: string | null;
 }
 
 export interface ApiOrder {

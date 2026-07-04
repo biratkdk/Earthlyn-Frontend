@@ -31,6 +31,7 @@ import { FulfillmentModule } from "./fulfillment/fulfillment.module";
 import { GrowthModule } from "./growth/growth.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { WishlistModule } from "./wishlist/wishlist.module";
+import { EcoVerifyModule } from "./eco-verify/eco-verify.module";
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { WishlistModule } from "./wishlist/wishlist.module";
     GrowthModule,
     NotificationsModule,
     WishlistModule,
+    EcoVerifyModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

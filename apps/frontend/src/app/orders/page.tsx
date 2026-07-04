@@ -169,9 +169,19 @@ export default function OrdersPage() {
 
                     {/* Eco points awarded */}
                     {order.ecoPointsAwarded ? (
-                      <p className="text-xs text-emerald-600 mt-1.5 font-medium">
-                        🌱 +{order.ecoPointsAwarded} eco points earned
-                      </p>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <p className="text-xs text-emerald-600 font-medium">
+                          🌱 +{order.ecoPointsAwarded} eco points earned
+                        </p>
+                        {order.ecoImpacts?.[0]?.verificationHash && (
+                          <Link
+                            href={`/eco-verify/${order.ecoImpacts[0].verificationHash}`}
+                            className="text-xs text-emerald-600 underline underline-offset-2 opacity-70 hover:opacity-100"
+                          >
+                            View certificate →
+                          </Link>
+                        )}
+                      </div>
                     ) : null}
 
                     {/* Actions */}

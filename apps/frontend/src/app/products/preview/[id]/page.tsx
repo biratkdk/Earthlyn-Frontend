@@ -12,6 +12,16 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { getAssetUrl } from "@/lib/utils/assets";
 import { LoadingState } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { ARViewer } from "@/components/ARViewer";
+
+interface DemandInfo {
+  demandTier: "HIGH" | "MEDIUM" | "LOW" | "NONE";
+  demandScore: number;
+  recentOrders: number;
+  viewCount: number;
+  surgeMultiplier: number;
+  suggestedPrice: number;
+}
 
 interface ReviewResponse {
   items: ApiProductReview[];
@@ -62,6 +72,8 @@ export default function ProductPreview() {
   const [loading, setLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [qty, setQty] = useState(1);
+  const [demandInfo, setDemandInfo] = useState<DemandInfo | null>(null);
+  const [showAR, setShowAR] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -91,6 +103,8 @@ export default function ProductPreview() {
       })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
+
+    apiClient.get<DemandInfo>(`/products/${id}/demand`).then(({ data }) => setDemandInfo(data)).catch(() => {});
   }, [id]);
 
   const submitReview = async (e: React.FormEvent) => {
@@ -131,6 +145,9 @@ export default function ProductPreview() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      {showAR && imageUrl && (
+        <ARViewer imageUrl={imageUrl} productName={product.name} onClose={() => setShowAR(false)} />
+      )}
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8">
         <Link href="/products" className="hover:text-[var(--accent)] transition-colors">Products</Link>
@@ -165,6 +182,13 @@ export default function ProductPreview() {
           <div className="absolute top-4 left-4">
             <EcoBadge score={product.ecoScore} />
           </div>
+          {/* 3D / AR button */}
+          <button
+            onClick={() => setShowAR(true)}
+            className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/70 hover:bg-black/90 text-white text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm transition-colors"
+          >
+            <span>🌀</span> 3D View
+          </button>
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-3xl">
               <span className="bg-white text-gray-800 font-bold px-4 py-2 rounded-full text-sm">Out of stock</span>
@@ -188,10 +212,23 @@ export default function ProductPreview() {
           )}
 
           {/* Price */}
-          <div className="mt-6 flex items-end gap-3">
+          <div className="mt-6 flex items-end gap-3 flex-wrap">
             <span className="text-4xl font-bold text-[var(--accent)]">${price.toFixed(2)}</span>
             {product.processingFee && Number(product.processingFee) > 0 && (
               <span className="text-sm text-gray-500 mb-1">+${Number(product.processingFee).toFixed(2)} processing fee</span>
+            )}
+            {demandInfo && demandInfo.demandTier !== "NONE" && (
+              <span className={`mb-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                demandInfo.demandTier === "HIGH"
+                  ? "bg-red-50 text-red-700 border-red-200"
+                  : demandInfo.demandTier === "MEDIUM"
+                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                  : "bg-sky-50 text-sky-700 border-sky-200"
+              }`}>
+                {demandInfo.demandTier === "HIGH" ? "🔥" : demandInfo.demandTier === "MEDIUM" ? "📈" : "👀"}
+                {demandInfo.demandTier === "HIGH" ? "High demand" : demandInfo.demandTier === "MEDIUM" ? "Trending" : "Growing interest"}
+                {demandInfo.surgeMultiplier > 1 && <span className="opacity-60">· {demandInfo.surgeMultiplier}×</span>}
+              </span>
             )}
           </div>
 

@@ -304,11 +304,64 @@ export class ProductService {
     return this.findAll(where, query, this.getPublicOrderBy(query?.sortBy));
   }
 
-  async findPublicById(id: string) {
-    return this.prisma.product.findFirst({
+  async findPublicById(id: string, incrementView = true) {
+    const product = await this.prisma.product.findFirst({
       where: { id, approvalStatus: "APPROVED" },
       include: this.productInclude,
     });
+    if (product && incrementView) {
+      // fire-and-forget increment — don't block the response
+      void this.prisma.product.update({
+        where: { id },
+        data: { viewCount: { increment: 1 } },
+      }).catch(() => {});
+    }
+    return product;
+  }
+
+  async getDemandInfo(id: string) {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [product, recentOrders] = await Promise.all([
+      this.prisma.product.findFirst({
+        where: { id, approvalStatus: "APPROVED" },
+        select: { viewCount: true, price: true, name: true, ecoScore: true },
+      }),
+      this.prisma.order.count({
+        where: { productId: id, createdAt: { gte: sevenDaysAgo } },
+      }),
+    ]);
+
+    if (!product) return null;
+
+    const views = product.viewCount ?? 0;
+    const conversionRate = views > 0 ? (recentOrders / views) * 100 : 0;
+
+    // Demand score: weighted sum of views + orders in last 7 days
+    const demandScore = Math.min(100, Math.round((views * 0.3 + recentOrders * 15)));
+
+    const tier =
+      demandScore >= 70 ? "HIGH" :
+      demandScore >= 40 ? "MEDIUM" :
+      demandScore >= 15 ? "LOW" : "NONE";
+
+    // Surge multiplier: up to 1.25x at max demand, eco-score products capped lower
+    const ecoDiscount = Number(product.ecoScore) > 80 ? 0.5 : 1;
+    const surgeMultiplier = tier === "HIGH"
+      ? 1 + (0.25 * (demandScore / 100) * ecoDiscount)
+      : 1;
+
+    return {
+      productId: id,
+      viewCount: views,
+      recentOrders,
+      conversionRate: Number(conversionRate.toFixed(1)),
+      demandScore,
+      demandTier: tier,
+      surgeMultiplier: Number(surgeMultiplier.toFixed(3)),
+      suggestedPrice: Number((Number(product.price) * surgeMultiplier).toFixed(2)),
+      basePrice: Number(product.price),
+    };
   }
 
   async getReviews(productId: string) {

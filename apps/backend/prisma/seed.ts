@@ -195,6 +195,152 @@ async function main() {
       ecoScore: 87,
       imageUrl: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80",
     },
+
+    // ── 12 new products ────────────────────────────────────────────────────────
+    {
+      sellerId: seller2.id,
+      name: "Zero-Waste Shampoo Bar — Rosemary & Mint",
+      description:
+        "One bar replaces 2–3 bottles of liquid shampoo. Sulphate-free, vegan, and packaged in a compostable kraft sleeve. Works on all hair types including colour-treated.",
+      category: "Personal Care",
+      price: 12.5,
+      processingFee: 0.63,
+      stock: 180,
+      ecoScore: 97,
+      imageUrl: "https://images.unsplash.com/photo-1631390093966-d8bd6f7e8ad1?w=600&q=80",
+    },
+    {
+      sellerId: seller.id,
+      name: "Bamboo Cutting Board — Large",
+      description:
+        "Extra-thick bamboo cutting board with juice grooves and non-slip feet. Bamboo is naturally antimicrobial and regenerates 3× faster than hardwood. Hand-wash only.",
+      category: "Kitchen",
+      price: 32.0,
+      processingFee: 1.6,
+      stock: 55,
+      ecoScore: 90,
+      imageUrl: "https://images.unsplash.com/photo-1564844536311-de546a28c87d?w=600&q=80",
+    },
+    {
+      sellerId: seller2.id,
+      name: "Recycled Glass Tumbler Set — 4 Pack",
+      description:
+        "Hand-blown from 100% post-consumer recycled glass. Each tumbler is slightly unique — slight variations in colour and shape are part of the charm. Dishwasher safe.",
+      category: "Drinkware",
+      price: 38.0,
+      processingFee: 1.9,
+      stock: 40,
+      ecoScore: 88,
+      imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80",
+    },
+    {
+      sellerId: seller.id,
+      name: "Solar Garden Stake Lights — Set of 8",
+      description:
+        "Powder-coated stainless steel stakes with monocrystalline solar panels. Auto on/off at dusk, 8-hour runtime. No wiring, no batteries to replace — ever.",
+      category: "Outdoor & Garden",
+      price: 36.0,
+      processingFee: 1.8,
+      stock: 62,
+      ecoScore: 93,
+      imageUrl: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80",
+    },
+    {
+      sellerId: seller2.id,
+      name: "Organic Cotton Tote Bag — Heavy Duty",
+      description:
+        "Made from GOTS-certified 12oz organic cotton canvas. Reinforced stitching at handles, internal zip pocket. Replaces over 700 single-use plastic bags over its lifetime.",
+      category: "Personal Care",
+      price: 16.0,
+      processingFee: 0.8,
+      stock: 220,
+      ecoScore: 95,
+      imageUrl: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80",
+    },
+    {
+      sellerId: seller.id,
+      name: "Bamboo Laptop Stand",
+      description:
+        "Adjustable 6-angle bamboo laptop stand. Improves posture and ventilation. Sustainably harvested Moso bamboo — no glues, no plastics, assembled with stainless steel hardware.",
+      category: "Tech Accessories",
+      price: 45.0,
+      processingFee: 2.25,
+      stock: 30,
+      ecoScore: 82,
+      imageUrl: "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80",
+    },
+    {
+      sellerId: seller2.id,
+      name: "Cork Yoga Mat",
+      description:
+        "Natural cork surface on a TPE rubber base — zero PVC, zero latex, zero toxic off-gassing. Self-cleaning (antimicrobial), non-slip even when wet. 4mm thick, 183cm × 61cm.",
+      category: "Personal Care",
+      price: 68.0,
+      processingFee: 3.4,
+      stock: 25,
+      ecoScore: 91,
+      imageUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80",
+    },
+    {
+      sellerId: seller.id,
+      name: "Compostable Bin Liners — 60 Bags",
+      description:
+        "EN 13432 certified home-compostable bin liners. Thick enough for kitchen waste, breaks down in 12 weeks in a home compost. Sold in a recycled cardboard box.",
+      category: "Kitchen",
+      price: 11.0,
+      processingFee: 0.55,
+      stock: 300,
+      ecoScore: 98,
+      imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+    },
+    {
+      sellerId: seller2.id,
+      name: "Insulated Bamboo Travel Mug — 350ml",
+      description:
+        "Double-walled bamboo exterior with stainless steel interior. Keeps coffee hot 4 hrs, iced drinks cold 8 hrs. Leakproof lid, fits most car cup holders.",
+      category: "Drinkware",
+      price: 22.0,
+      processingFee: 1.1,
+      stock: 75,
+      ecoScore: 89,
+      imageUrl: "https://images.unsplash.com/photo-1572119865084-43c285814d63?w=600&q=80",
+    },
+    {
+      sellerId: seller.id,
+      name: "Seed Starter Biodegradable Pots — 48 Pack",
+      description:
+        "Made from compressed coir and peat-free compost. Plant pot and all directly into soil — roots grow through the walls, no transplant shock. Ideal for tomatoes, herbs, and flowers.",
+      category: "Outdoor & Garden",
+      price: 14.0,
+      processingFee: 0.7,
+      stock: 160,
+      ecoScore: 99,
+      imageUrl: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80",
+    },
+    {
+      sellerId: seller2.id,
+      name: "Natural Loofah Sponge Set — 3 Pack",
+      description:
+        "100% plant-grown Egyptian loofah. Exfoliates and cleans without microplastic shedding. Fully biodegradable — add to compost when worn out. Lasts 4–6 weeks per sponge.",
+      category: "Personal Care",
+      price: 8.5,
+      processingFee: 0.43,
+      stock: 250,
+      ecoScore: 100,
+      imageUrl: "https://images.unsplash.com/photo-1631390093966-d8bd6f7e8ad1?w=600&q=80",
+    },
+    {
+      sellerId: seller.id,
+      name: "Solar USB Charging Panel — 10W",
+      description:
+        "Foldable monocrystalline 10W solar panel with dual USB-A ports. Charges phones and small devices in direct sunlight. Water-resistant, packable to A4 size. Great for hiking and travel.",
+      category: "Tech Accessories",
+      price: 54.0,
+      processingFee: 2.7,
+      stock: 20,
+      ecoScore: 86,
+      imageUrl: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80",
+    },
   ];
 
   for (const p of products) {
